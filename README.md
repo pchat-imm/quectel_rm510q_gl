@@ -95,3 +95,35 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 4006ms
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
+
+### start AT command with minicom
+```
+>> sudo dmesg | grep /dev/ttyUSB
+```
+it should show USB0,1,2,3. From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, it said 
+> /dev/ttyUSB0 - DM \
+> /dev/ttyUSB1 - For GPS NMEA message output \
+> /dev/ttyUSB2 - For AT command communication \
+> /dev/ttyUSB3 - For PPP connection or AT command communication \
+
+Therefore, we are going to use /dev/ttyUSB2 for AT command
+
+- setting serial port
+```
+>> sudo minicom -s
+```
+we are setting serial port 
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="30%" height="30%"/> <br/>
+make sure 
+> serial device = /dev/ttyUSB2 \
+> bps = 115200 (default) \
+> Hardware flow control = No \
+
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a289b780-4135-44cd-a02e-da1e2a03187a" width=50% height=50%/> <br/>
+everytime finish `Save setup as dfl` before `exit`
+
+## AT command
+```
+AT
+OK
+```
