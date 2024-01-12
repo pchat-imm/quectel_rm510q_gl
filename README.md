@@ -1,6 +1,8 @@
 ## quectel_rm510q_gl
 ### current task
-[ ] use AT command to operate the quectel
+[ ] use AT command to operate the quectel with srsRAN 4G
+12/01/2024
+[ ] have tried following 'analysis of realtime...' paper, but could not get responds back from AT+QNWPREFCFG command at lte_band, nr5g_band, or mode_pref. Also the command AT+QMBNCFG return error
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
@@ -207,4 +209,26 @@ AT+QNWCFG=?
 
 AT+QCAINFO
 +QCAINFO: "PCC",250,50,"LTE BAND 1",1,167,-116,-13,-86,7
+
+AT+QENG=?
++QENG: "servingcell","NOCONN"                                         
++QENG: "LTE","FDD",520,04,4D8002,167,250,1,3,3,7E7,-128,-17,-94,7,10,23-
++QENG: "NR5G-NSA",                                                    
+OK
+
+AT+QNWPREFCFG=?
++QNWPREFCFG: "gw_band",B1:...:BN
++QNWPREFCFG: "lte_band",B1:...:BN
++QNWPREFCFG: "nsa_nr5g_band",B1:...:BN
++QNWPREFCFG: "nr5g_band",B1:...:BN
++QNWPREFCFG: "mode_pref",RAT1:...:RATN
++QNWPREFCFG: "srv_domain",(0-2)
++QNWPREFCFG: "voice_domain",(0-3)
++QNWPREFCFG: "roam_pref",(1,3,255)
++QNWPREFCFG: "ue_usage_setting",(0,1)
++QNWPREFCFG: "policy_band"
++QNWPREFCFG: "ue_capabi
+
+AT+QNWPREFCFG="nr5g_band"
++QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:719
 ```
