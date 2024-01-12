@@ -1,4 +1,6 @@
 ## quectel_rm510q_gl
+### current task
+[ ] use AT command to operate the quectel
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
@@ -178,4 +180,23 @@ and to enter special menu `ctrl + A` then `z`
 ```
 AT
 OK
+
+AT+COPS?                                                                           
++COPS: 0,0,"TRUE-H TRUE-H",13                                                
+                                                                  
+AT+CGFCONT?                                                                     
++CGDCONT: 1,"IPV4V6","","0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",0,0,0,0,,,,,,,,,"",,,0
++CGDCONT: 2,"IPV4V6","ims","0.0.0.0.0.0.0.                                   
+
+AT+CPIN?                                                                            
++CPIN: READY
+
+AT+QNWCFG=?
++QNWCFG: "lte_cdrx",(0,1),(0,1)
++QNWCFG: "nr5g_cdrx",(0,1)
++QNWCFG: "csi_ctrl",(0,1),(0,1)
++QNWCFG: "lte_csi",(0-31),<ri>,
+
+AT+QCAINFO
++QCAINFO: "PCC",250,50,"LTE BAND 1",1,167,-116,-13,-86,7
 ```
