@@ -2,9 +2,9 @@
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
-- [start AT command with minicom](#ATminicom)
+- [start AT command with minicom](#atminicom)
 
-### setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
+## setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
 - check basic qmi command: https://techship.com/faq/how-to-step-by-step-set-up-a-data-connection-over-qmi-interface-using-qmicli-and-in-kernel-driver-qmi-wwan-in-linux/
 - other: https://solidrun.atlassian.net/wiki/spaces/developer/pages/326631427/Setting+up+a+data+connection+over+QMI+interface+using+libqmi
@@ -145,7 +145,7 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
-### start AT command with minicom <a name = "ATminicom"></a>
+## start AT command with minicom <a name = "atminicom"></a>
 ```
 >> sudo dmesg | grep /dev/ttyUSB
 ```
