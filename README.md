@@ -1,4 +1,4 @@
-### quectel_rm510q_gl
+## quectel_rm510q_gl
 ### setting up a data connection over QMI interface using libqmi
 
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
@@ -34,6 +34,51 @@ if not `online` set it
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
 [/dev/cdc-wdm0] Operating mode set successfully
 ```
+<details open>
+<summary>other basic command to check the quectel board with qmicli command</summary>
+	
+```
+>> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --uim-get-card-status
+[/dev/cdc-wdm0] Successfully got card status
+Provisioning applications:
+	Primary GW:   slot '1', application '1'
+	Primary 1X:   session doesn't exist
+	Secondary GW: session doesn't exist
+	Secondary 1X: session doesn't exist
+Slot [1]:
+	Card state: 'present'
+	UPIN state: 'not-initialized'
+		UPIN retries: '0'
+		UPUK retries: '0'
+	Application [1]:
+		Application type:  'usim (2)'
+		Application state: 'ready'
+		Application ID:
+			A0:00:00:00:87:10:02:FF:66:FF:FF:89:FF:FF:FF
+		Personalization state: 'ready'
+		UPIN replaces PIN1: 'no'
+		PIN1 state: 'disabled'
+			PIN1 retries: '3'
+			PUK1 retries: '10'
+		PIN2 state: 'enabled-not-verified'
+			PIN2 retries: '3'
+			PUK2 retries: '10'
+```
+```
+>> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --dms-get-ids
+[/dev/cdc-wdm0] Device IDs retrieved:
+	ESN: '0'
+	IMEI: '867034040025018'
+	MEID: 'unknown'
+	IMEI SV: '27'
+```
+```
+>> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --dms-get-revision
+[/dev/cdc-wdm0] Device revision retrieved:
+	Revision: 'RM510QGLAAR11A03M4G'
+```
+</details>
+
 
 - configure the network interface
 ```
@@ -101,10 +146,10 @@ rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 >> sudo dmesg | grep /dev/ttyUSB
 ```
 it should show USB0,1,2,3. From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, it said 
-> /dev/ttyUSB0 - DM \
-> /dev/ttyUSB1 - For GPS NMEA message output \
-> /dev/ttyUSB2 - For AT command communication \
-> /dev/ttyUSB3 - For PPP connection or AT command communication \
+> - /dev/ttyUSB0 - DM \
+> - /dev/ttyUSB1 - For GPS NMEA message output \
+> - /dev/ttyUSB2 - For AT command communication \
+> - /dev/ttyUSB3 - For PPP connection or AT command communication \
 
 Therefore, we are going to use /dev/ttyUSB2 for AT command
 
@@ -112,15 +157,18 @@ Therefore, we are going to use /dev/ttyUSB2 for AT command
 ```
 >> sudo minicom -s
 ```
-we are setting serial port 
+we are setting serial port </br>
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="30%" height="30%"/> <br/>
-make sure 
-> serial device = /dev/ttyUSB2 \
-> bps = 115200 (default) \
-> Hardware flow control = No \
+make sure </br>
+> - serial device = /dev/ttyUSB2 \
+> - bps = 115200 (default) \
+> - Hardware flow control = No \
 
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a289b780-4135-44cd-a02e-da1e2a03187a" width=50% height=50%/> <br/>
 everytime finish `Save setup as dfl` before `exit`
+
+to exit minicom type `ctrl + A` then `x`
+and to enter special menu `ctrl + A` then `z`
 
 ## AT command
 ```
