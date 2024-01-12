@@ -177,6 +177,14 @@ to exit minicom type `ctrl + A` then `x`
 and to enter special menu `ctrl + A` then `z`
 
 ## AT command
+- using ctrl A + E = echo ON, to show what you type on the screen
+- using ctrl A + X to quit the minicom
+- if minicom freeze, open another window and try
+```
+>> ps aux | grep minicom
+>> sudo kill -SIGTERM <PID>
+```
+
 ```
 AT
 OK
