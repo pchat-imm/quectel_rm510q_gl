@@ -1,5 +1,6 @@
 ## quectel_rm510q_gl
 ### current task
+[ ] try the section ### more AT command again and note down response
 [ ] use AT command to operate the quectel with srsRAN 4G
 12/01/2024
 [ ] have tried following 'analysis of realtime...' paper, but could not get responds back from AT+QNWPREFCFG command at lte_band, nr5g_band, or mode_pref. Also the command AT+QMBNCFG return error
@@ -37,7 +38,11 @@ Bus 003 Device 012: ID 2c7c:0800 Quectel Wireless Solutions Co., Ltd. RM510Q-GL
 	Mode: 'online'
 	HW restricted: 'no'
 ```
-if not `online` set it
+if not `online` set try
+```
+>> sudo qmicli -p --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+```
+or set it as online
 ```
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
 [/dev/cdc-wdm0] Operating mode set successfully
@@ -111,6 +116,7 @@ then restart the interface
 	Service: 'wds'
 	    CID: '23'
 ```
+if the network timeout, it could be that you skip the state of `sudo ip link set wwan0 down` to `sudo ip link set wwan0 up`. Try again. But sometimes it is not this. 
 
 - then configure the IP address and the default route with udhcpc
 ```
@@ -231,4 +237,57 @@ AT+QNWPREFCFG=?
 
 AT+QNWPREFCFG="nr5g_band"
 +QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:719
+```
+
+### more AT command operation from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
+- quectel information
+```
+ATI
+Quectel                                                                         
+RM510Q-GL                                                                       
+Revision: RM510QGLAAR11A03M4G       
+OK
+```
+- Firmware update `AT+QMBNCFG=”Select”,”Row_commercial”` returns `OK`
+- reboot (always wait for the reboot to finish)
+```
+AT+CFUN=1,1                                                                     
+OK                                                                              
+RDY                                                                             
++CPIN: READY                                                                    
++QUSIM: 1                                                                       
++CFUN: 1                                                                        
++QIND: SMS DONE                                                                 
++QIND: PB DONE                                                                  
+ATE0                                                                            
+OK
++CRSM: 148,8,""                                                                 
+OK                                                                              
++CEMODE: 2
+OK                                                                               
++CCLK: "24/01/16,08:46:44+28"                                                   
+OK  
+```
+- activate PDP context (if it show +CME ERROR: 30 means you didn't wait for the reboot to finish,reboot again and wait for it to finish)
+```
+AT+CGACT=1,1                                                                    
+OK
+```
+- show PDP address (it will return address in "". If there is no address here, reboot again and wait for it to finish)
+```
+AT+CGPADDR=1                                                                    
++CGPADDR: 1,"10.101.133.178" 
+OK  
+```
+- verify network setting `AT+CGDCONT?`
+- ping website
+```
+AT+QPING=1,"8.8.8.8"                                                            
+OK                                                                              
++QPING: 561
+
+
+AT+QPING=1,"openairinterface.org"                                               
+OK                                                                              
++QPING: 561  
 ```
