@@ -1,9 +1,9 @@
 ## quectel_rm510q_gl
 ### current task
-[ ] try the section ### more AT command again and note down response
-[ ] use AT command to operate the quectel with srsRAN 4G
+- [ ] try the section ### more AT command again and note down response
+- [ ] use AT command to operate the quectel with srsRAN 4G
 12/01/2024
-[ ] have tried following 'analysis of realtime...' paper, but could not get responds back from AT+QNWPREFCFG command at lte_band, nr5g_band, or mode_pref. Also the command AT+QMBNCFG return error
+- [ ] have tried following 'analysis of realtime...' paper, but could not get responds back from AT+QNWPREFCFG command at lte_band, nr5g_band, or mode_pref. Also the command AT+QMBNCFG return error
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
@@ -116,6 +116,12 @@ then restart the interface
 	Service: 'wds'
 	    CID: '23'
 ```
+my client setup
+```
+sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='internet',username='true',password='true'" --client-no-release-cid
+```
+
+
 if the network timeout, it could be that you skip the state of `sudo ip link set wwan0 down` to `sudo ip link set wwan0 up`. Try again. But sometimes it is not this. 
 
 - then configure the IP address and the default route with udhcpc
@@ -185,7 +191,12 @@ to exit minicom type `ctrl + A` then `x`
 and to enter special menu `ctrl + A` then `z`
 
 ## AT command
+from
+- [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
+- [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
+
 - using ctrl A + E = echo ON, to show what you type on the screen
+- usign ctrl A + C = clear screen
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
 ```
@@ -268,10 +279,37 @@ OK
 +CCLK: "24/01/16,08:46:44+28"                                                   
 OK  
 ```
+```
+at+cfun=1,1
+OK
+RDY
++CPIN: READY
++QUSIM: 1
++CFUN: 1
++QIND: SMS DONE
++QIND: PB DONE
+ATE0
+OK
+OK
+OK
++CRSM: 148,8,""
+OK
++CEMODE: 2
+OK
++QGPS: (1-4),(1-255),(1-3),(100-65535)
+OK
++CPMS: "ME",18,127,"ME",18,127,"ME",18,127
+OK
++CTZU: (0,1)
+OK
++CCLK: "24/01/18,08:58:19+28"
+OK
+```
+
 - activate PDP context (if it show +CME ERROR: 30 means you didn't wait for the reboot to finish,reboot again and wait for it to finish)
 ```
-AT+CGACT=1,1                                                                    
-OK
+AT+CGACT=1,1
++CCLK: "24/01/18,08:39:27+28"                                                     OK
 ```
 - show PDP address (it will return address in "". If there is no address here, reboot again and wait for it to finish)
 ```
@@ -289,5 +327,63 @@ OK
 
 AT+QPING=1,"openairinterface.org"                                               
 OK                                                                              
-+QPING: 561  
++QPING: 561
+
+at+qping=1,"8.8.8.8"
++QPING: 569
+```
+```
+at+qping=1,"openairinterface.org"
+OK
++QPING: 0,"137.74.50.85",32,224,255
++QPING: 0,"137.74.50.85",32,225,255
++QPING: 0,"137.74.50.85",32,225,255
++QPING: 0,"137.74.50.85",32,221,255
++QPING: 0,4,4,0,221,225,223
+
+at+qping=1,"google.com"
+OK
++QPING: 0,"216.58.200.14",32,49,255
++QPING: 0,"216.58.200.14",32,42,255
++QPING: 0,"216.58.200.14",32,58,255
++QPING: 0,"216.58.200.14",32,44,255
++QPING: 0,4,4,0,42,58,47
+```
+
+show current firmware version
+```
+at+gmr                                  
+RM510QGLAAR11A03M4G   
+```
+show IMSI and IMEI of (U)SIM
+```
+at+cimi                                 
++CCLK: "24/01/18,08:32:36+28"           
+OK
+
+at+gsn
+867034040025018
+OK
+```
+
+display 5g nr frequencuy band
+```
+at+qnwprefcfg="nr5g_band"
++QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:71:77:78:79
+```
+
+display then set operation mode to 5G NR, then enable 5G operation
+```
+at+qnwprefcfg="mode_pref"
++QNWPREFCFG: "mode_pref",AUTO
+OK
+
+at+qnwprefcfg="mode_pref",nr5g
++CCLK: "24/01/18,08:50:24+28"
+OK
+
+at+qnwprefcfg="nr5g_disable_mode",0
++CCLK: "24/01/18,08:50:59+28"
+OK
+
 ```
