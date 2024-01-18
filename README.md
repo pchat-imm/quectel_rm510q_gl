@@ -1,9 +1,7 @@
 ## quectel_rm510q_gl
 ### current task
-- [ ] try the section ### more AT command again and note down response
+18/01/2024
 - [ ] use AT command to operate the quectel with srsRAN 4G
-12/01/2024
-- [ ] have tried following 'analysis of realtime...' paper, but could not get responds back from AT+QNWPREFCFG command at lte_band, nr5g_band, or mode_pref. Also the command AT+QMBNCFG return error
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
