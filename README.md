@@ -1,7 +1,11 @@
 ## quectel_rm510q_gl
 ### current task
-18/01/2024
-- [ ] use AT command to operate the quectel with srsRAN 4G
+22/01/2024
+- [ ] quectel with new sysmocom SIM with srsRAN 4G \
+for gNB, change epc.conf (MCC), user_db.csv, enb.conf (MCC) \
+for core, add UE on open5GS (localhost:9999)
+- [ ] use this sim with mobile
+- [ ] use this sim with quectel
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
