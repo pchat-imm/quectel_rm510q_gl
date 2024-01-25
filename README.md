@@ -1,15 +1,11 @@
 ## quectel_rm510q_gl
-### current task
-22/01/2024
-- [ ] quectel with new sysmocom SIM with srsRAN 4G \
-for gNB, change epc.conf (MCC), user_db.csv, enb.conf (MCC) \
-for core, add UE on open5GS (localhost:9999)
-- [ ] use this sim with mobile
-- [ ] use this sim with quectel
 
 ## Table of contents
 - [setting up a data connection over QMI interface using libqmi](#setupqmi)
-- [start AT command with minicom](#atminicom)
+- [setting up a data connection use mmcli](#setupmmcli)
+- [start AT command with minicom](#atminicom_basic)
+- [AT command for start using 5G](#atminicom_5G)
+- [AT command for start using 4G only](#atminicom_4G)
 
 ## setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
@@ -168,7 +164,7 @@ rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 | ---  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |999700000062713	|8988211000000627136	|0008	|2481	|43215893	|5679	|21192366	|96E5235D7BD18E48BEF1B85521383C4E	|B1C0A05123C419D615B71EC0F8CE13AB	|73947583	|BAEFEE018E08B0DE276DCF03900BE2AF	|B2037C9475B7C9A2D8637F8B9651B835	|AED8AB5736726DB4BF6CF1FE44E61BF6	|EF00A3344612955BC3144E4DF8C719D4	|A42E9EBDFB3768C98AFEED6154E375F7	|240A034AE19677D51B1CB19DD5F63503	|6AC9B3640FD1FD90D50B43004C72C0A4	|EEA71035E53F67E7266E2C954212E6BC	|55CADF364D70E23D7ADFA510902ABFC2|
 
-## setting up a data connection use mmcli
+## setting up a data connection use mmcli <a name = "setupmmcli"></a>
 list connected modem
 ```
 >> sudo mmcli -L
@@ -188,8 +184,7 @@ then ping
 >> ping 8.8.8.8 -I wlp9s0
 ```
 
-
-## start AT command with minicom <a name = "atminicom"></a>
+## start AT command with minicom <a name = "atminicom_basic"></a>
 ```
 >> sudo dmesg | grep /dev/ttyUSB
 ```
@@ -218,7 +213,7 @@ everytime finish `Save setup as dfl` before `exit`
 to exit minicom type `ctrl + A` then `x`
 and to enter special menu `ctrl + A` then `z`
 
-## AT command
+## AT command basic 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
@@ -278,7 +273,8 @@ AT+QNWPREFCFG="nr5g_band"
 +QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:719
 ```
 
-### more AT command operation from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
+## AT command for start using 5G <a name = "atminicom_5G"></a
+### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
 - quectel information
 ```
 ATI
@@ -287,26 +283,11 @@ RM510Q-GL
 Revision: RM510QGLAAR11A03M4G       
 OK
 ```
-- Firmware update `AT+QMBNCFG=”Select”,”Row_commercial”` returns `OK`
+- Firmware update
+```
+AT+QMBNCFG=”Select”,”Row_commercial”` returns `OK`
+```
 - reboot (always wait for the reboot to finish)
-```
-AT+CFUN=1,1                                                                     
-OK                                                                              
-RDY                                                                             
-+CPIN: READY                                                                    
-+QUSIM: 1                                                                       
-+CFUN: 1                                                                        
-+QIND: SMS DONE                                                                 
-+QIND: PB DONE                                                                  
-ATE0                                                                            
-OK
-+CRSM: 148,8,""                                                                 
-OK                                                                              
-+CEMODE: 2
-OK                                                                               
-+CCLK: "24/01/16,08:46:44+28"                                                   
-OK  
-```
 ```
 at+cfun=1,1
 OK
@@ -333,7 +314,6 @@ OK
 +CCLK: "24/01/18,08:58:19+28"
 OK
 ```
-
 - activate PDP context (if it show +CME ERROR: 30 means you didn't wait for the reboot to finish,reboot again and wait for it to finish)
 ```
 AT+CGACT=1,1
@@ -352,15 +332,10 @@ AT+QPING=1,"8.8.8.8"
 OK                                                                              
 +QPING: 561
 
-
 AT+QPING=1,"openairinterface.org"                                               
 OK                                                                              
 +QPING: 561
 
-at+qping=1,"8.8.8.8"
-+QPING: 569
-```
-```
 at+qping=1,"openairinterface.org"
 OK
 +QPING: 0,"137.74.50.85",32,224,255
@@ -377,7 +352,6 @@ OK
 +QPING: 0,"216.58.200.14",32,44,255
 +QPING: 0,4,4,0,42,58,47
 ```
-
 show current firmware version
 ```
 at+gmr                                  
@@ -393,25 +367,27 @@ at+gsn
 867034040025018
 OK
 ```
-
 display 5g nr frequencuy band
 ```
 at+qnwprefcfg="nr5g_band"
 +QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:71:77:78:79
 ```
-
 display then set operation mode to 5G NR, then enable 5G operation
 ```
-at+qnwprefcfg="mode_pref"
-+QNWPREFCFG: "mode_pref",AUTO
-OK
-
 at+qnwprefcfg="mode_pref",nr5g
 +CCLK: "24/01/18,08:50:24+28"
 OK
-
+```
+start using on 5G
+```
 at+qnwprefcfg="nr5g_disable_mode",0
 +CCLK: "24/01/18,08:50:59+28"
 OK
+```
 
+## AT command for start using 4G only <a name = "atminicom_4G"></a
+```
+at+qnwprefcfg = "lte_band"
+at+qnwprefcfg = "mode_pref"
+at+qnwprefcfg = "mode_pref", LTE
 ```
