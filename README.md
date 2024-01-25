@@ -168,6 +168,27 @@ rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 | ---  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |999700000062713	|8988211000000627136	|0008	|2481	|43215893	|5679	|21192366	|96E5235D7BD18E48BEF1B85521383C4E	|B1C0A05123C419D615B71EC0F8CE13AB	|73947583	|BAEFEE018E08B0DE276DCF03900BE2AF	|B2037C9475B7C9A2D8637F8B9651B835	|AED8AB5736726DB4BF6CF1FE44E61BF6	|EF00A3344612955BC3144E4DF8C719D4	|A42E9EBDFB3768C98AFEED6154E375F7	|240A034AE19677D51B1CB19DD5F63503	|6AC9B3640FD1FD90D50B43004C72C0A4	|EEA71035E53F67E7266E2C954212E6BC	|55CADF364D70E23D7ADFA510902ABFC2|
 
+## setting up a data connection use mmcli
+list connected modem
+```
+>> sudo mmcli -L
+    /org/freedesktop/ModemManager1/Modem/2 [Quectel] RM510Q-GL
+```
+The above has modem number = 2, then connect the network. The simple-connect command initiate a PDN connection for DNN "srsapn".
+```
+>> sudo mmcli -L
+    /org/freedesktop/ModemManager1/Modem/2 [Quectel] RM510Q-GL
+```
+then set interface up, in my case is wlp9s0
+```
+>> sudo ip link set wlp9s0 up
+```
+then ping
+```
+>> ping 8.8.8.8 -I wlp9s0
+```
+
+
 ## start AT command with minicom <a name = "atminicom"></a>
 ```
 >> sudo dmesg | grep /dev/ttyUSB
