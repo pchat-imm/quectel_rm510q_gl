@@ -6,6 +6,7 @@
 - [start AT command with minicom](#atminicom_basic)
 - [AT command for start using 5G](#atminicom_5G)
 - [AT command for start using 4G only](#atminicom_4G)
+- [quectel for srsRAN4G](#quectel_srsRAN4G)
 
 ## setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
@@ -114,21 +115,33 @@ then restart the interface
 	Service: 'wds'
 	    CID: '23'
 ```
-my client setup
+my client sim card setup
 ```
 sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='internet',username='true',password='true'" --client-no-release-cid
 ```
-
-
+with sysmocom sim card
+```
+sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
+error: couldn't start network: QMI protocol error (14): 'CallFailed'
+call end reason (3): generic-no-service
+verbose call end reason (3,2001): [cm] no-service
+[/dev/cdc-wdm0] Client ID not released:
+	Service: 'wds'
+	    CID: '16'
+```
 if the network timeout, it could be that you skip the state of `sudo ip link set wwan0 down` to `sudo ip link set wwan0 up`. Try again. But sometimes it is not this. 
 
 - then configure the IP address and the default route with udhcpc
 ```
->> sudo udhcpc -q -f -i wwan0
-udhcpc: started, v1.30.1
-udhcpc: sending discover
-udhcpc: sending select for 10.38.223.119
-udhcpc: lease of 10.38.223.119 obtained, lease time 7200
+sudo udhcpc -q -f -i wwan0
+	udhcpc: started, v1.30.1
+	udhcpc: sending discover
+	udhcpc: sending select for 10.38.223.119
+	udhcpc: lease of 10.38.223.119 obtained, lease time 7200
+```
+in case you connect quectel with srsRAN_4G that you have already masq the interface to `wlp9s0' the selected interface will be changed
+```
+sudo udhcpc -q -f -i wlp9s0
 ```
 
 - check the assigned IP address
@@ -159,10 +172,12 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
-### sysmocom sim
+<details open>
+<summary> ### sysmocom sim </summary>
 |IMSI	|ICCID	|ACC	|PIN1	|PUK1	|PIN2	|PUK2	|Ki	|OPC	|ADM1	|KIC1	|KID1	|KIK1	|KIC2	|KID2	|KIK2	|KIC3	|KID3	|KIK3
 | ---  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |999700000062713	|8988211000000627136	|0008	|2481	|43215893	|5679	|21192366	|96E5235D7BD18E48BEF1B85521383C4E	|B1C0A05123C419D615B71EC0F8CE13AB	|73947583	|BAEFEE018E08B0DE276DCF03900BE2AF	|B2037C9475B7C9A2D8637F8B9651B835	|AED8AB5736726DB4BF6CF1FE44E61BF6	|EF00A3344612955BC3144E4DF8C719D4	|A42E9EBDFB3768C98AFEED6154E375F7	|240A034AE19677D51B1CB19DD5F63503	|6AC9B3640FD1FD90D50B43004C72C0A4	|EEA71035E53F67E7266E2C954212E6BC	|55CADF364D70E23D7ADFA510902ABFC2|
+</details>
 
 ## setting up a data connection use mmcli <a name = "setupmmcli"></a>
 list connected modem
@@ -210,10 +225,13 @@ make sure </br>
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a289b780-4135-44cd-a02e-da1e2a03187a" width=50% height=50%/> <br/>
 everytime finish `Save setup as dfl` before `exit`
 
-to exit minicom type `ctrl + A` then `x`
-and to enter special menu `ctrl + A` then `z`
+- using ctrl A + E = echo ON, to show what you type on the screen
+- usign ctrl A + C = clear screen
+- using ctrl A + X to quit the minicom
+- if minicom freeze, open another window and try
 
-## AT command basic 
+<details open>
+<summary> ## AT command basic </summary> 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
@@ -226,7 +244,6 @@ from
 >> ps aux | grep minicom
 >> sudo kill -SIGTERM <PID>
 ```
-
 ```
 AT
 OK
@@ -272,6 +289,7 @@ AT+QNWPREFCFG=?
 AT+QNWPREFCFG="nr5g_band"
 +QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:719
 ```
+</details>
 
 ## AT command for start using 5G <a name = "atminicom_5G"></a
 ### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
@@ -367,6 +385,12 @@ at+gsn
 867034040025018
 OK
 ```
+### the main part of start 5G mode in quectel
+unlock the quectel
+```
+at+qmbncfg="Select","Row_commercial"                                            
+OK
+```
 display 5g nr frequencuy band
 ```
 at+qnwprefcfg="nr5g_band"
@@ -391,3 +415,196 @@ at+qnwprefcfg = "lte_band"
 at+qnwprefcfg = "mode_pref"
 at+qnwprefcfg = "mode_pref", LTE
 ```
+
+## quectel for srsRAN4G <a name = "quectel_srsRAN4G"></a
+1. masq the interface
+```
+cd ~/.config/srsran
+sudo srsepc_if_masq.sh wlp9s0
+ifconfig
+```
+2. run epc
+```
+cd ~/.config/srsran
+sudo srsepc epc.conf
+```
+3. run enb
+```
+cd ~/.config/srsran
+sudo srsenb enb.conf
+```
+4. start connect quectel to the masq
+```
+>> lsusb
+>> sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+>> sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
+>> sudo udhcpc -q -f -i wlp9s0
+>> ifconfig wlp9s0
+>> ping -I wwan0 -c 5 8.8.8.8
+```
+5. run AT command to ping to the gNB
+```
+>> sudo minicom -s
+
+at
+at+cops
+at+qnwprefcfg = "lte_band"
+at+qnwprefcfg = "mode_pref"
+at+qnwprefcfg = "mode_pref", LTE
+AT+QPING=1,"8.8.8.8"      
+```
+
+<details open>
+<summary> log </summary>
+log epc
+```
+chatchamon@chatchamon-ThinkPad-L14-Gen-2:~/.config/srsran$ sudo srsepc epc.conf 
+[sudo] password for chatchamon: 
+
+Built in Release mode using commit eea87b1d8 on branch master.
+
+
+---  Software Radio Systems EPC  ---
+
+Reading configuration file epc.conf...
+HSS Initialized.
+MME S11 Initialized
+MME GTP-C Initialized
+MME Initialized. MCC: 0xf999, MNC: 0xff70
+SPGW GTP-U Initialized.
+SPGW S11 Initialized.
+SP-GW Initialized.
+Received S1 Setup Request.
+S1 Setup Request - eNB Name: srsenb01, eNB id: 0x19b
+S1 Setup Request - MCC:999, MNC:70
+S1 Setup Request - TAC 7, B-PLMN 0x99f907
+S1 Setup Request - Paging DRX v128
+Sending S1 Setup Response
+Initial UE message: LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST
+Received Initial UE message -- Attach Request
+Attach request -- IMSI: 999700000062713
+Attach request -- eNB-UE S1AP Id: 1
+Attach request -- Attach type: 2
+Attach Request -- UE Network Capabilities EEA: 11110000
+Attach Request -- UE Network Capabilities EIA: 01110000
+Attach Request -- MS Network Capabilities Present: false
+PDN Connectivity Request -- EPS Bearer Identity requested: 0
+PDN Connectivity Request -- Procedure Transaction Id: 12
+PDN Connectivity Request -- ESM Information Transfer requested: false
+Downlink NAS: Sending Authentication Request
+UL NAS: Received Authentication Response
+Authentication Response -- IMSI 999700000062713
+UE Authentication Accepted.
+Generating KeNB with UL NAS COUNT: 0
+Downlink NAS: Sending NAS Security Mode Command.
+UL NAS: Received Security Mode Complete
+Security Mode Command Complete -- IMSI: 999700000062713
+Getting subscription information -- QCI 9
+Sending Create Session Request.
+Creating Session Response -- IMSI: 999700000062713
+Creating Session Response -- MME control TEID: 1
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_CREATE_SESSION_REQUEST
+SPGW: Allocated Ctrl TEID 1
+SPGW: Allocated User TEID 1
+SPGW: Allocate UE IP 172.16.0.2
+Received Create Session Response
+Create Session Response -- SPGW control TEID 1
+Create Session Response -- SPGW S1-U Address: 127.0.1.100
+SPGW Allocated IP 172.16.0.2 to IMSI 999700000062713
+Adding attach accept to Initial Context Setup Request
+Sent Initial Context Setup Request. E-RAB id 5 
+Received Initial Context Setup Response
+E-RAB Context Setup. E-RAB id 5
+E-RAB Context -- eNB TEID 0x1; eNB GTP-U Address 127.0.1.1
+UL NAS: Received Attach Complete
+Unpacked Attached Complete Message. IMSI 999700000062713
+Unpacked Activate Default EPS Bearer message. EPS Bearer id 5
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
+Sending EMM Information
+Received UE Context Release Request. MME-UE S1AP Id 1
+There are active E-RABs, send release access bearers request
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
+Received UE Context Release Complete. MME-UE S1AP Id 1
+UE Context Release Completed.
+Initial UE message: NAS Message Type Unknown
+Received Initial UE message -- Service Request
+Service request -- S-TMSI 0x3acabeef
+Service request -- eNB UE S1AP Id 2
+Service Request -- Short MAC valid
+Service Request -- User is ECM DISCONNECTED
+UE previously assigned IP: 172.16.0.2
+Generating KeNB with UL NAS COUNT: 2
+UE Ctr TEID 0
+Sent Initial Context Setup Request. E-RAB id 5 
+Received Initial Context Setup Response
+E-RAB Context Setup. E-RAB id 5
+E-RAB Context -- eNB TEID 0x2; eNB GTP-U Address 127.0.1.1
+Initial Context Setup Response triggered from Service Request.
+Sending Modify Bearer Request.
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
+Received UE Context Release Request. MME-UE S1AP Id 2
+There are active E-RABs, send release access bearers request
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
+Received UE Context Release Complete. MME-UE S1AP Id 2
+UE Context Release Completed.
+```
+
+log enb
+```
+chatchamon@chatchamon-ThinkPad-L14-Gen-2:~/.config/srsran$ sudo srsenb enb.conf 
+[sudo] password for chatchamon: 
+Active RF plugins: libsrsran_rf_blade.so libsrsran_rf_zmq.so
+Inactive RF plugins: 
+---  Software Radio Systems LTE eNodeB  ---
+
+Reading configuration file enb.conf...
+WARNING: cpu0 scaling governor is not set to performance mode. Realtime processing could be compromised. Consider setting it to performance mode before running the application.
+
+Built in Release mode using commit eea87b1d8 on branch master.
+
+Opening 2 channels in RF device=bladeRF with args=default
+Supported RF device list: bladeRF zmq file
+Opening bladeRF...
+Set RX sampling rate 1.92 Mhz, filter BW: 1.92 Mhz
+
+==== eNodeB started ===
+Type <t> to view trace
+Set RX sampling rate 3.84 Mhz, filter BW: 3.07 Mhz
+Setting manual TX/RX offset to 27 samples
+Setting frequency: DL=1842.5 Mhz, UL=1747.5 MHz for cc_idx=0 nof_prb=15
+set TX frequency to 1842500000
+set TX frequency to 1842500000
+set RX frequency to 1747500000
+set RX frequency to 1747500000
+RACH:  tti=9661, cc=0, pci=1, preamble=47, offset=25, temp_crnti=0x46
+RACH:  tti=9601, cc=0, pci=1, preamble=21, offset=25, temp_crnti=0x47
+User 0x47 connected
+Disconnecting rnti=0x46.
+Disconnecting rnti=0x47.
+t
+Enter t to stop trace.
+RF status: O=1, U=0, L=0
+RACH:  tti=9071, cc=0, pci=1, preamble=39, offset=25, temp_crnti=0x48
+User 0x48 connected
+
+               -----------------DL----------------|-------------------------UL-------------------------
+rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
+lte    1   48   15   1    4   4.2k    7    0   0% |  14.0   11.5   40   10   146k   22    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    1     72    1    0   0% |  11.4   10.2   40   12   2.4k    1    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    1     72    1    0   0% |  12.9   10.5   40    9   1.9k    1    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+```
+</details>
+
+
+
+
+
+
