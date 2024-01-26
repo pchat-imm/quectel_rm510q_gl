@@ -416,7 +416,7 @@ at+qnwprefcfg = "mode_pref"
 at+qnwprefcfg = "mode_pref", LTE
 ```
 
-## quectel for srsRAN4G <a name = "quectel_srsRAN4G"></a
+## quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G"></a
 1. masq the interface
 ```
 cd ~/.config/srsran
