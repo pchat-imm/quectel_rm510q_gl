@@ -1,14 +1,22 @@
-## quectel_rm510q_gl
+## Quectel_RM510Q_GL
 
 ## Table of contents
-- [setting up a data connection over QMI interface using libqmi](#setupqmi)
-- [setting up a data connection use mmcli](#setupmmcli)
-- [start AT command with minicom](#atminicom_basic)
-- [AT command for start using 5G](#atminicom_5G)
-- [AT command for start using 4G only](#atminicom_4G)
-- [quectel for srsRAN4G](#quectel_srsRAN4G)
+1. set data connection \
+1.1. [setting up a data connection over QMI interface using libqmi](#setupqmi) \
+1.2. [setting up a data connection use mmcli](#setupmmcli) \
+2. AT command \
+2.1. [start AT command with minicom](#atminicom_basic) \
+2.2. [AT command for start using 5G](#atminicom_5G) \
+2.3. [AT command for start using 4G only](#atminicom_4G) \
+3. use case
+3.1. [quectel for srsRAN4G](#quectel_srsRAN4G)
 
-## setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
+## successful test case
+- quectel + sim 5G to internet
+- quectel + sysmocom sim to srsRAN4G
+
+## 1. setup data connection
+### 1.1. setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
 - check basic qmi command: https://techship.com/faq/how-to-step-by-step-set-up-a-data-connection-over-qmi-interface-using-qmicli-and-in-kernel-driver-qmi-wwan-in-linux/
 - other: https://solidrun.atlassian.net/wiki/spaces/developer/pages/326631427/Setting+up+a+data+connection+over+QMI+interface+using+libqmi
@@ -173,14 +181,15 @@ rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
 <details close>
-<summary><b> sysmocom sim </b></summary>
+<summary><i> sysmocom sim </i></summary>
 	
 |IMSI	|ICCID	|ACC	|PIN1	|PUK1	|PIN2	|PUK2	|Ki	|OPC	|ADM1	|KIC1	|KID1	|KIK1	|KIC2	|KID2	|KIK2	|KIC3	|KID3	|KIK3
 | ---  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |999700000062713	|8988211000000627136	|0008	|2481	|43215893	|5679	|21192366	|96E5235D7BD18E48BEF1B85521383C4E	|B1C0A05123C419D615B71EC0F8CE13AB	|73947583	|BAEFEE018E08B0DE276DCF03900BE2AF	|B2037C9475B7C9A2D8637F8B9651B835	|AED8AB5736726DB4BF6CF1FE44E61BF6	|EF00A3344612955BC3144E4DF8C719D4	|A42E9EBDFB3768C98AFEED6154E375F7	|240A034AE19677D51B1CB19DD5F63503	|6AC9B3640FD1FD90D50B43004C72C0A4	|EEA71035E53F67E7266E2C954212E6BC	|55CADF364D70E23D7ADFA510902ABFC2|
 </details>
 
-## setting up a data connection use mmcli <a name = "setupmmcli"></a>
+### 1.2. setting up a data connection use mmcli <a name = "setupmmcli"></a>
+##### from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829
 list connected modem
 ```
 >> sudo mmcli -L
@@ -199,8 +208,8 @@ then ping
 ```
 >> ping 8.8.8.8 -I wlp9s0
 ```
-
-## start AT command with minicom <a name = "atminicom_basic"></a>
+## 2. AT command
+### 2.1. start AT command with minicom <a name = "atminicom_basic"></a>
 ```
 >> sudo dmesg | grep /dev/ttyUSB
 ```
@@ -232,7 +241,7 @@ everytime finish `Save setup as dfl` before `exit`
 - if minicom freeze, open another window and try
 
 <details close>
-<summary><b> AT command basic </b></summary> 
+<summary><i> AT command basic </i></summary> 
 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
@@ -293,8 +302,8 @@ AT+QNWPREFCFG="nr5g_band"
 ```
 </details>
 
-## AT command for start using 5G <a name = "atminicom_5G"></a
-### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
+### 2.2. AT command for start using 5G <a name = "atminicom_5G"></a
+##### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
 - quectel information
 ```
 ATI
@@ -387,7 +396,7 @@ at+gsn
 867034040025018
 OK
 ```
-### the main part of start 5G mode in quectel
+#### the main part of start 5G mode in quectel
 unlock the quectel
 ```
 at+qmbncfg="Select","Row_commercial"                                            
@@ -411,14 +420,14 @@ at+qnwprefcfg="nr5g_disable_mode",0
 OK
 ```
 
-## AT command for start using 4G only <a name = "atminicom_4G">
+### 2.3. AT command for start using 4G only <a name = "atminicom_4G">
 ```
 at+qnwprefcfg = "lte_band"
 at+qnwprefcfg = "mode_pref"
 at+qnwprefcfg = "mode_pref", LTE
 ```
-
-## quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
+## 3. use case
+### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
 1. masq the interface
 ```
 cd ~/.config/srsran
