@@ -46,8 +46,8 @@ or set it as online
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
 [/dev/cdc-wdm0] Operating mode set successfully
 ```
-<details open>
-<summary>other basic command to check the quectel board with qmicli command</summary>
+<details close>
+<summary><b> other basic command to check the quectel board with qmicli command </b></summary>
 	
 ```
 >> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --uim-get-card-status
@@ -172,8 +172,9 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
-<details open>
-<summary> ### sysmocom sim </summary>
+<details close>
+<summary><b> sysmocom sim </b></summary>
+	
 |IMSI	|ICCID	|ACC	|PIN1	|PUK1	|PIN2	|PUK2	|Ki	|OPC	|ADM1	|KIC1	|KID1	|KIK1	|KIC2	|KID2	|KIK2	|KIC3	|KID3	|KIK3
 | ---  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |999700000062713	|8988211000000627136	|0008	|2481	|43215893	|5679	|21192366	|96E5235D7BD18E48BEF1B85521383C4E	|B1C0A05123C419D615B71EC0F8CE13AB	|73947583	|BAEFEE018E08B0DE276DCF03900BE2AF	|B2037C9475B7C9A2D8637F8B9651B835	|AED8AB5736726DB4BF6CF1FE44E61BF6	|EF00A3344612955BC3144E4DF8C719D4	|A42E9EBDFB3768C98AFEED6154E375F7	|240A034AE19677D51B1CB19DD5F63503	|6AC9B3640FD1FD90D50B43004C72C0A4	|EEA71035E53F67E7266E2C954212E6BC	|55CADF364D70E23D7ADFA510902ABFC2|
@@ -230,8 +231,9 @@ everytime finish `Save setup as dfl` before `exit`
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
 
-<details open>
-<summary> ## AT command basic </summary> 
+<details close>
+<summary><b> AT command basic </b></summary> 
+
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
@@ -409,14 +411,14 @@ at+qnwprefcfg="nr5g_disable_mode",0
 OK
 ```
 
-## AT command for start using 4G only <a name = "atminicom_4G"></a
+## AT command for start using 4G only <a name = "atminicom_4G">
 ```
 at+qnwprefcfg = "lte_band"
 at+qnwprefcfg = "mode_pref"
 at+qnwprefcfg = "mode_pref", LTE
 ```
 
-## quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G"></a
+## quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
 1. masq the interface
 ```
 cd ~/.config/srsran
@@ -454,8 +456,9 @@ at+qnwprefcfg = "mode_pref", LTE
 AT+QPING=1,"8.8.8.8"      
 ```
 
-<details open>
+<details close>
 <summary> log </summary>
+
 log epc
 ```
 chatchamon@chatchamon-ThinkPad-L14-Gen-2:~/.config/srsran$ sudo srsepc epc.conf 
@@ -562,7 +565,7 @@ WARNING: cpu0 scaling governor is not set to performance mode. Realtime processi
 
 Built in Release mode using commit eea87b1d8 on branch master.
 
-Opening 2 channels in RF device=bladeRF with args=default
+ing 2 channels in RF device=bladeRF with args=default
 Supported RF device list: bladeRF zmq file
 Opening bladeRF...
 Set RX sampling rate 1.92 Mhz, filter BW: 1.92 Mhz
