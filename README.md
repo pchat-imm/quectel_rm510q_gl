@@ -39,7 +39,7 @@ Bus 003 Device 012: ID 2c7c:0800 Quectel Wireless Solutions Co., Ltd. RM510Q-GL
 
 - get operating mode
 ```
-sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+sudo qmicli -d /dev/cdc-wdm0 --dms-get-operating-mode 
 ```
 ```
 [/dev/cdc-wdm0] Operating mode retrieved:
@@ -175,6 +175,19 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 --- 8.8.8.8 ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 4006ms
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
+```
+```
+>> ping -I wlp9s0 www.chula.ac.th -c 5
+PING www.chula.ac.th(2a02:e980:12c::4d (2a02:e980:12c::4d)) from 2001:fb1:d2:2a19:97c7:e47f:14f1:45fc wlp9s0: 56 data bytes
+64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=1 ttl=56 time=9.10 ms
+64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=2 ttl=56 time=11.3 ms
+64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=3 ttl=56 time=11.4 ms
+64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=4 ttl=56 time=11.7 ms
+64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=5 ttl=56 time=11.1 ms
+
+--- www.chula.ac.th ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4010ms
+rtt min/avg/max/mdev = 9.101/10.906/11.659/0.919 ms
 ```
 
 <details close>
@@ -401,14 +414,37 @@ AT+CGPADDR=1
 OK  
 ```
 - verify network setting `AT+CGDCONT?`
-- ping website
-```
-AT+QPING=1,"8.8.8.8"                                                            
-OK                                                                              
-+QPING: 561
+- ping website \
 
-AT+QPING=1,"openairinterface.org"                                               
-OK                                                                              
+Explanation: \
+```
+at+qping=1,"google.com"
+OK
++QPING: 0,"216.58.200.14",32,49,255
++QPING: 0,"216.58.200.14",32,42,255
++QPING: 0,"216.58.200.14",32,58,255
++QPING: 0,"216.58.200.14",32,44,255
++QPING: 0,4,4,0,42,58,47
+```
+| 0 (successful), not 0 (error code)| IP Address | length ping request (byte) | RTT(ms) | TTL |
+| --- | --- | --- | --- | --- |
+| 0/561 | "8.8.8.8" | 32 | 224 | 255 |
+0 is successful, other are error
+
+| finresult | total sending ping qrequest | total ping requests that are received | lost - number of ping requests that are timeout | min RTT (ms) | max RTT (ms) | avg RTT (ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 4 | 4 | 0 | 42 | 59 | 47 |
+
+with wireshark
+![Screenshot from 2024-03-04 14-10-02](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a0530bee-6241-446d-b450-f87825a404b0)
+![Screenshot from 2024-03-04 14-10-17](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/27c5b924-853e-4240-b82e-afdaae26f501)
+
+note that it is ICMPv6, which has Neighbor soliciation, and Neighbour advertisement
+
+
+```
+AT+QPING=1,"openairinterface.org" 
+OK            
 +QPING: 561
 
 at+qping=1,"openairinterface.org"
@@ -426,6 +462,15 @@ OK
 +QPING: 0,"216.58.200.14",32,58,255
 +QPING: 0,"216.58.200.14",32,44,255
 +QPING: 0,4,4,0,42,58,47
+
+at+qping=1,"8.8.8.8"                                               
+OK                                          
++QPING: 0,"8.8.8.8",32,78,255
++QPING: 0,"8.8.8.8",32,30,255
++QPING: 0,"8.8.8.8",32,44,255
++QPING: 0,"8.8.8.8",32,51,255
++QPING: 0,4,4,0,30,78,50
++QIURC: "pdpdeact",1
 ```
 show current firmware version
 ```
