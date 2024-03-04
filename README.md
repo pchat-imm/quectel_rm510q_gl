@@ -258,8 +258,9 @@ everytime finish `Save setup as dfl` before `exit`
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
-also don't forget to connect with broadband
-<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a288c95d-3c49-4146-b53c-3e8528cbc1b3" width="30%" height="30%"/> <br/>
+  
+also don't forget to connect with broadband \
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a288c95d-3c49-4146-b53c-3e8528cbc1b3" width="70%" height="70%"/> <br/>
 
 basic minicom menu
 - using ctrl A + E = echo ON, to show what you type on the screen
@@ -442,10 +443,11 @@ OK
 | 0 (successful), not 0 (error code)| IP Address | length ping request (byte) | RTT(ms) | TTL |
 | --- | --- | --- | --- | --- |
 | 0/561 | "8.8.8.8" | 32 | 224 | 255 |
+
 0 is successful, other are error
 
 | finresult | total sending ping qrequest | total ping requests that are received | lost - number of ping requests that are timeout | min RTT (ms) | max RTT (ms) | avg RTT (ms) |
-| --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- |
 | 0 | 4 | 4 | 0 | 42 | 59 | 47 |
 
 in wireshark (ICMPV6) it could show list below, But importantly, you need `Echo ping request` and `Echo ping reply` to ensure that the ping is sent successfully
