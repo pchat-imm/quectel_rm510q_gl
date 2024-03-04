@@ -46,7 +46,7 @@ sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode
 	Mode: 'online'
 	HW restricted: 'no'
 ```
-if not online, set it as online
+If not `online` set it as online
 ```
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
 [/dev/cdc-wdm0] Operating mode set successfully
@@ -99,15 +99,15 @@ Slot [1]:
 
 - configure the network interface
 ```
->> sudo ip link set wwan0 down
+sudo ip link set wwan0 down
 ```
 set the interface into raw mode (IP packets not encapsulated in Ethernet frames)
 ```
->> echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
+echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
 ```
 then restart the interface
 ```
->> sudo ip link set wwan0 up
+sudo ip link set wwan0 up
 ```
 
 - when the wwan0 is up, connect the network by changing apn, username, password
@@ -199,11 +199,11 @@ The above has modem number = 2, then connect the network. The simple-connect com
 ```
 then set interface up, in my case is wlp9s0
 ```
->> sudo ip link set wlp9s0 up
+sudo ip link set wlp9s0 up
 ```
 then ping
 ```
->> ping 8.8.8.8 -I wlp9s0
+ping 8.8.8.8 -I wlp9s0
 ```
 ## 2. AT command
 ### 2.1. start AT command with minicom <a name = "atminicom_basic"></a>
@@ -221,7 +221,7 @@ Therefore, we are going to use /dev/ttyUSB2 for AT command
 
 - setting serial port
 ```
->> sudo minicom -s
+sudo minicom -s
 ```
 we are setting serial port </br>
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="30%" height="30%"/> <br/>
@@ -261,8 +261,10 @@ OK
 
 2. check current network selection mode of the modem
 ```
-AT+COPS?                                                                           
-+COPS: 0,0,"TRUE-H TRUE-H",13                                                
+AT+COPS?
++COPS: 0,0,"TRUE-H TRUE-H",13
++COPS: 0,0,"TRUE-H TRUE-H",7  
++COPS: (1,"TRUE-H","TRUE-H","52004",12),(2,"TRUE-H","TRUE-H","52004",7,        
 ```
 In case return no network name, could be that you set connecting to 5G only, which might not be available there. \
 So, change the setting back to any network (3G, 4G, 5G) to be able to connect to other communication technology.
@@ -382,6 +384,10 @@ OK
 OK
 +CCLK: "24/01/18,08:58:19+28"
 OK
+RM510QGLAAR11A03M4G                                                             
+OK                                                                              
+RM510QGLAAR11A03M4G_01.001.01.001                                               
+OK 
 ```
 - activate PDP context (if it show +CME ERROR: 30 means you didn't wait for the reboot to finish,reboot again and wait for it to finish)
 ```
