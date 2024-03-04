@@ -13,6 +13,8 @@
 
 ## successful test case
 - quectel + sim 5G to internet
+	- to ping
+	- to iperf (in the same network, not yet on NSTDANetWiFi)
 - quectel + sysmocom sim to srsRAN4G
 
 ## 1. setup data connection
@@ -225,10 +227,10 @@ ping 8.8.8.8 -I wlp9s0
 >> sudo dmesg | grep ttyUSB
 ```
 it should show USB0,1,2,3. From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, it said 
-> - /dev/ttyUSB0 - DM \
-> - /dev/ttyUSB1 - For GPS NMEA message output \
-> - /dev/ttyUSB2 - For AT command communication \
-> - /dev/ttyUSB3 - For PPP connection or AT command communication \
+> - /dev/ttyUSB0 - DM 
+> - /dev/ttyUSB1 - For GPS NMEA message output 
+> - /dev/ttyUSB2 - For AT command communication 
+> - /dev/ttyUSB3 - For PPP connection or AT command communication 
 
 Therefore, we are going to use /dev/ttyUSB2 for AT command
 
@@ -251,11 +253,13 @@ everytime finish `Save setup as dfl` before `exit`
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
 
-###2.2 AT command basic to check if connect to internet properly 
+### 2.2 AT command basic to check if connect to internet properly 
 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
+also don't forget to connect with broadband
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a288c95d-3c49-4146-b53c-3e8528cbc1b3" width="30%" height="30%"/> <br/>
 
 basic minicom menu
 - using ctrl A + E = echo ON, to show what you type on the screen
@@ -420,11 +424,20 @@ Explanation: \
 ```
 at+qping=1,"google.com"
 OK
-+QPING: 0,"216.58.200.14",32,49,255
-+QPING: 0,"216.58.200.14",32,42,255
-+QPING: 0,"216.58.200.14",32,58,255
-+QPING: 0,"216.58.200.14",32,44,255
-+QPING: 0,4,4,0,42,58,47
++QPING: 0,"216.58.200.14",32,73,255
++QPING: 0,"216.58.200.14",32,56,255
++QPING: 0,"216.58.200.14",32,65,255
++QPING: 0,"216.58.200.14",32,72,255
++QPING: 0,4,4,0,56,73,66
++QIURC: "pdpdeact",1
+
+at+qping=1,"www.chula.ac.th"
+OK
++QPING: 0,"45.60.126.77",32,70,255
++QPING: 0,"45.60.126.77",32,47,255
++QPING: 0,"45.60.126.77",32,25,255
++QPING: 0,"45.60.126.77",32,41,255
++QPING: 0,4,4,0,25,70,45
 ```
 | 0 (successful), not 0 (error code)| IP Address | length ping request (byte) | RTT(ms) | TTL |
 | --- | --- | --- | --- | --- |
@@ -435,11 +448,16 @@ OK
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 4 | 4 | 0 | 42 | 59 | 47 |
 
-with wireshark
-![Screenshot from 2024-03-04 14-10-02](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a0530bee-6241-446d-b450-f87825a404b0)
-![Screenshot from 2024-03-04 14-10-17](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/27c5b924-853e-4240-b82e-afdaae26f501)
+in wireshark (ICMPV6) it could show list below, But importantly, you need `Echo ping request` and `Echo ping reply` to ensure that the ping is sent successfully
+- Neighbour solicitaiton
+- Neighbour Advertisement
+- Echo (ping) request
+- Echo (ping) reply
+But sometimes wireshark might not catch anything (crying~)
 
-note that it is ICMPv6, which has Neighbor soliciation, and Neighbour advertisement
+with wireshark
+Echo ping reply
+![Screenshot from 2024-03-04 15-36-38](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/719ca952-2a9a-46be-b9cd-44d0d6376b13)
 
 
 ```
