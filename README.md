@@ -37,19 +37,16 @@ Bus 003 Device 012: ID 2c7c:0800 Quectel Wireless Solutions Co., Ltd. RM510Q-GL
 >> sudo apt update && sudo apt install libqmi-utils udhcpc
 ```
 
-- check operating mode
+- get operating mode
 ```
->> sudo qmicli --device=/dev/cdc-wdm0 --
->> sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+```
+```
 [/dev/cdc-wdm0] Operating mode retrieved:
 	Mode: 'online'
 	HW restricted: 'no'
 ```
-if not `online` set try
-```
->> sudo qmicli -p --device=/dev/cdc-wdm0 --dms-get-operating-mode 
-```
-or set it as online
+if not online, set it as online
 ```
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
 [/dev/cdc-wdm0] Operating mode set successfully
@@ -104,7 +101,7 @@ Slot [1]:
 ```
 >> sudo ip link set wwan0 down
 ```
-set the interface into raw mode
+set the interface into raw mode (IP packets not encapsulated in Ethernet frames)
 ```
 >> echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
 ```
@@ -212,6 +209,7 @@ then ping
 ### 2.1. start AT command with minicom <a name = "atminicom_basic"></a>
 ```
 >> sudo dmesg | grep /dev/ttyUSB
+>> sudo dmesg | grep ttyUSB
 ```
 it should show USB0,1,2,3. From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, it said 
 > - /dev/ttyUSB0 - DM \
@@ -240,13 +238,13 @@ everytime finish `Save setup as dfl` before `exit`
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
 
-<details close>
-<summary><i> AT command basic </i></summary> 
+###2.2 AT command basic to check if connect to internet properly 
 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
 
+basic minicom menu
 - using ctrl A + E = echo ON, to show what you type on the screen
 - usign ctrl A + C = clear screen
 - using ctrl A + X to quit the minicom
@@ -255,18 +253,35 @@ from
 >> ps aux | grep minicom
 >> sudo kill -SIGTERM <PID>
 ```
+1. check connection to the modem
 ```
 AT
 OK
+```
 
+2. check current network selection mode of the modem
+```
 AT+COPS?                                                                           
 +COPS: 0,0,"TRUE-H TRUE-H",13                                                
-                                                                  
+```
+In case return no network name, could be that you set connecting to 5G only, which might not be available there. \
+So, change the setting back to any network (3G, 4G, 5G) to be able to connect to other communication technology.
+```
+AT+COPS=0 		// Automatic Network Selection
+
+AT+QNWPREFCFG="mode_pref",LTE:NR5G 	// set RAT to LTE & 5G NR
+```
+
+<details close>
+<summary> Other AT Command </summary>
+
+```                                                                  
 AT+CGFCONT?                                                                     
 +CGDCONT: 1,"IPV4V6","","0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",0,0,0,0,,,,,,,,,"",,,0
 +CGDCONT: 2,"IPV4V6","ims","0.0.0.0.0.0.0.                                   
 
-AT+CPIN?                                                                            
+>> Enter PIN
+AT+CPIN?                                                                         
 +CPIN: READY
 
 AT+QNWCFG=?
@@ -275,15 +290,20 @@ AT+QNWCFG=?
 +QNWCFG: "csi_ctrl",(0,1),(0,1)
 +QNWCFG: "lte_csi",(0-31),<ri>,
 
+>> Query Carrier Aggregration Parameters
 AT+QCAINFO
 +QCAINFO: "PCC",250,50,"LTE BAND 1",1,167,-116,-13,-86,7
 
+>> Query Primary Serving Cell and Neighbour Cell
 AT+QENG=?
 +QENG: "servingcell","NOCONN"                                         
 +QENG: "LTE","FDD",520,04,4D8002,167,250,1,3,3,7E7,-128,-17,-94,7,10,23-
 +QENG: "NR5G-NSA",                                                    
 OK
+```
 
+- Configure Network Seacrching Preferences
+```
 AT+QNWPREFCFG=?
 +QNWPREFCFG: "gw_band",B1:...:BN
 +QNWPREFCFG: "lte_band",B1:...:BN
@@ -296,13 +316,31 @@ AT+QNWPREFCFG=?
 +QNWPREFCFG: "ue_usage_setting",(0,1)
 +QNWPREFCFG: "policy_band"
 +QNWPREFCFG: "ue_capabi
+```
+Explanation: \
+ - gw_band = WCDMA Band Configure
+ - lte_band
+ - nsa_nr5g_band
+ - nr5g_band 
+ - mode_pref = Network Search Mode Configuration
+```
+AT+QNWPREFCFG="mode_pref"			// query the current config
++QNWPREFCFG: "mode_pref",AUTO  
+OK
+
+AT+QNWPREFCFG="mode_pref",LTE 		// set RAT to LTE only
+OK
+
+AT+QNWPREFCFG="mode_pref",LTE:NR5G 	// set RAT to LTE & 5G NR
+OK
+
 
 AT+QNWPREFCFG="nr5g_band"
 +QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:719
 ```
 </details>
 
-### 2.2. AT command for start using 5G <a name = "atminicom_5G"></a
+### 2.2. AT command for start using 5G <a name = "atminicom_5G"></a>
 ##### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
 - quectel information
 ```
@@ -314,8 +352,10 @@ OK
 ```
 - Firmware update
 ```
-AT+QMBNCFG=”Select”,”Row_commercial”` returns `OK`
+AT+QMBNCFG=”Select”,”Row_commercial”
+OK
 ```
+
 - reboot (always wait for the reboot to finish)
 ```
 at+cfun=1,1
@@ -326,7 +366,7 @@ RDY
 +CFUN: 1
 +QIND: SMS DONE
 +QIND: PB DONE
-ATE0
+TATE0
 OK
 OK
 OK
