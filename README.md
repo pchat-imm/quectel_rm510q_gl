@@ -14,8 +14,11 @@
 ## successful test case
 - quectel + sim 5G to internet
 	- to ping
-	- to iperf (in the same network, not yet on NSTDANetWiFi)
+	- to iperf (on 5G to UNAI)
 - quectel + sysmocom sim to srsRAN4G
+
+## 0. setup Antenna
+- connect to ANT0 and ANT1 (see more on hardware design)
 
 ## 1. setup data connection
 ### 1.1. setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
@@ -727,7 +730,24 @@ lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      
 </details>
 
 
-
-
-
-
+### 3.2. quectel to enable computator to connect to 5G and iperf to UNAI
+```
+>> iperf3 -c <IP> -p 9051 -b 10M
+Connecting to host <IP>, port 9051
+[  5] local 10.33.134.148 port 48042 connected to 203.185.137.212 port 9051
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   941 KBytes  7.71 Mbits/sec    4   69.1 KBytes       
+[  5]   1.00-2.00   sec   255 KBytes  2.09 Mbits/sec    1   1.36 KBytes       
+[  5]   2.00-3.00   sec   748 KBytes  6.13 Mbits/sec    3   63.7 KBytes       
+[  5]   3.00-4.00   sec   998 KBytes  8.17 Mbits/sec    4   35.2 KBytes       
+[  5]   4.00-5.00   sec   624 KBytes  5.11 Mbits/sec    2   23.0 KBytes       
+[  5]   5.00-6.00   sec   249 KBytes  2.04 Mbits/sec    0   28.5 KBytes       
+[  5]   6.00-7.00   sec   249 KBytes  2.04 Mbits/sec    0   33.9 KBytes       
+[  5]   7.00-8.00   sec   249 KBytes  2.04 Mbits/sec    3   29.8 KBytes       
+[  5]   8.00-9.00   sec   249 KBytes  2.04 Mbits/sec    1   36.6 KBytes       
+[  5]   9.00-10.00  sec  1.10 MBytes  9.19 Mbits/sec    0   93.5 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  5.55 MBytes  4.66 Mbits/sec   18             sender
+[  5]   0.00-10.07  sec  5.43 MBytes  4.53 Mbits/sec                  receiver
+```
