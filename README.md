@@ -212,9 +212,100 @@ list connected modem
 ```
 The above has modem number = 2, then connect the network. The simple-connect command initiate a PDN connection for DNN "srsapn".
 ```
->> sudo mmcli -L
-    /org/freedesktop/ModemManager1/Modem/2 [Quectel] RM510Q-GL
+>> sudo mmcli -m 22 -e
+successfully enabled the modem
+
+>> sudo mmcli -m 22 --simple-connect="apn=srsapn"
+successfully connected the modem
 ```
+
+<details close>
+<summary> sudo mmcli -m 2 </summary>
+
+```
+sudo mmcli -m 22
+  -----------------------------------
+  General  |                    path: /org/freedesktop/ModemManager1/Modem/22
+           |               device id: 6535a45484985ff207e2b40c0e2487ae3914bb2b
+  -----------------------------------
+  Hardware |            manufacturer: Quectel
+           |                   model: RM510Q-GL
+           |       firmware revision: RM510QGLAAR11A03M4G
+           |          carrier config: ROW_Commercial
+           | carrier config revision: 0A010809
+           |            h/w revision: 20000
+           |               supported: gsm-umts, lte, 5gnr
+           |                 current: gsm-umts, lte, 5gnr
+           |            equipment id: 867034040025018
+  -----------------------------------
+  System   |                  device: /sys/devices/pci0000:00/0000:00:14.0/usb3/3-1
+           |                 drivers: qmi_wwan, option
+           |                  plugin: quectel
+           |            primary port: cdc-wdm0
+           |                   ports: cdc-wdm0 (qmi), ttyUSB0 (qcdm), ttyUSB1 (gps), 
+           |                          ttyUSB2 (at), ttyUSB3 (at), wwan0 (net)
+  -----------------------------------
+  Status   |                    lock: sim-pin2
+           |          unlock retries: sim-pin (3), sim-puk (10), sim-pin2 (3), sim-puk2 (10)
+           |                   state: registered
+           |             power state: on
+           |             access tech: lte
+           |          signal quality: 86% (recent)
+  -----------------------------------
+  Modes    |               supported: allowed: 3g; preferred: none
+           |                          allowed: 4g; preferred: none
+           |                          allowed: 3g, 4g; preferred: 4g
+           |                          allowed: 3g, 4g; preferred: 3g
+           |                          allowed: 5g; preferred: none
+           |                          allowed: 4g, 5g; preferred: 5g
+           |                          allowed: 4g, 5g; preferred: 4g
+           |                          allowed: 3g, 5g; preferred: 5g
+           |                          allowed: 3g, 5g; preferred: 3g
+           |                          allowed: 3g, 4g, 5g; preferred: 5g
+           |                          allowed: 3g, 4g, 5g; preferred: 4g
+           |                          allowed: 3g, 4g, 5g; preferred: 3g
+           |                 current: allowed: 4g; preferred: none
+  -----------------------------------
+  Bands    |               supported: utran-1, utran-3, utran-4, utran-6, utran-5, utran-8, 
+           |                          utran-9, utran-2, eutran-1, eutran-2, eutran-3, eutran-4, eutran-5, 
+           |                          eutran-7, eutran-8, eutran-12, eutran-13, eutran-14, eutran-17, 
+           |                          eutran-18, eutran-19, eutran-20, eutran-25, eutran-26, eutran-28, 
+           |                          eutran-29, eutran-30, eutran-32, eutran-34, eutran-38, eutran-39, 
+           |                          eutran-40, eutran-41, eutran-42, eutran-43, eutran-46, eutran-48, 
+           |                          eutran-66, eutran-71, utran-19, ngran-1, ngran-2, ngran-3, ngran-5, 
+           |                          ngran-7, ngran-8, ngran-12, ngran-14, ngran-20, ngran-25, ngran-28, 
+           |                          ngran-38, ngran-40, ngran-41, ngran-48, ngran-66, ngran-71, ngran-77, 
+           |                          ngran-78, ngran-79, ngran-257, ngran-258, ngran-260, ngran-261
+           |                 current: utran-1, utran-3, utran-4, utran-6, utran-5, utran-8, 
+           |                          utran-2, eutran-1, eutran-2, eutran-3, eutran-4, eutran-5, eutran-7, 
+           |                          eutran-8, eutran-12, eutran-13, eutran-14, eutran-18, eutran-19, 
+           |                          eutran-20, eutran-25, eutran-26, eutran-28, eutran-29, eutran-30, 
+           |                          eutran-32, eutran-34, eutran-38, eutran-39, eutran-40, eutran-41, 
+           |                          eutran-42, eutran-43, eutran-46, eutran-48, eutran-66, eutran-71, 
+           |                          utran-19, ngran-1, ngran-2, ngran-3, ngran-5, ngran-7, ngran-8, 
+           |                          ngran-12, ngran-20, ngran-25, ngran-28, ngran-38, ngran-40, ngran-41, 
+           |                          ngran-48, ngran-66, ngran-71, ngran-77, ngran-78, ngran-79
+  -----------------------------------
+  IP       |               supported: ipv4, ipv6, ipv4v6
+  -----------------------------------
+  3GPP     |                    imei: 867034040025018
+           |           enabled locks: fixed-dialing
+           |             operator id: 99970
+           |           operator name: 999 70
+           |            registration: home
+           |    packet service state: attached
+  -----------------------------------
+  3GPP EPS |    ue mode of operation: csps-2
+           |     initial bearer path: /org/freedesktop/ModemManager1/Bearer/15
+           |  initial bearer ip type: ipv4v6
+  -----------------------------------
+  SIM      |        primary sim path: /org/freedesktop/ModemManager1/SIM/13
+           |          sim slot paths: slot 1: /org/freedesktop/ModemManager1/SIM/13 (active)
+           |                          slot 2: none
+
+```
+</details>
+
 then set interface up, in my case is wlp9s0
 ```
 sudo ip link set wlp9s0 up
@@ -550,8 +641,31 @@ ifconfig
 ```
 2. run epc
 ```
-cd ~/.config/srsran
-sudo srsepc epc.conf
+>> cd ~/.config/srsran
+>> ifconfig
+>> route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         _gateway        0.0.0.0         UG    600    0        0 wlp9s0
+default         _gateway        0.0.0.0         UG    21050  0        0 wwan0
+10.53.1.0       0.0.0.0         255.255.255.0   U     0      0        0 br-2d2baf4f3a8c
+10.221.40.0     0.0.0.0         255.255.248.0   U     600    0        0 wlp9s0
+link-local      0.0.0.0         255.255.0.0     U     1000   0        0 wwan0
+172.16.0.0      0.0.0.0         255.255.255.248 U     1050   0        0 wwan0
+172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
+172.19.1.0      0.0.0.0         255.255.255.0   U     0      0        0 br-36c6988d1fa9
+
+>> sudo srsepc_if_masq.sh wlp9s0
+>> sudo srsepc epc.conf
+```
+in case route is not presented
+```
+### Enable IPv4/IPv6 Forwarding
+$ sudo sysctl -w net.ipv4.ip_forward=1
+$ sudo sysctl -w net.ipv6.conf.all.forwarding=1
+
+### Add NAT Rule
+$ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 3. run enb
 ```
@@ -559,6 +673,19 @@ cd ~/.config/srsran
 sudo srsenb enb.conf
 ```
 4. start connect quectel to the masq
+4.1. method on discussion forum
+```
+>> sudo mmcli -L
+    /org/freedesktop/ModemManager1/Modem/22 [Quectel] RM510Q-GL
+
+>> sudo mmcli -m 22
+
+>> sudo mmcli -m 22 -e
+successfully enabled the modem
+
+>> sudo mmcli -m 22 --simple-connect="apn=srsapn"
+```
+4.2 method from this document
 ```
 >> lsusb
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
@@ -567,12 +694,17 @@ sudo srsenb enb.conf
 >> ifconfig wlp9s0
 >> ping -I wwan0 -c 5 8.8.8.8
 ```
-5. run AT command to ping to the gNB
+5. click connect on the network setting
+![Screenshot from 2024-03-15 14-20-37](https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3)
+
+6. run AT command to ping to the gNB
 ```
 >> sudo minicom -s
 
 at
-at+cops
+at+cops?
++COPS: 0,0,"Software Radio Systems R",7
+
 at+qnwprefcfg = "lte_band"
 at+qnwprefcfg = "mode_pref"
 at+qnwprefcfg = "mode_pref", LTE
@@ -584,8 +716,7 @@ AT+QPING=1,"8.8.8.8"
 
 log epc
 ```
-chatchamon@chatchamon-ThinkPad-L14-Gen-2:~/.config/srsran$ sudo srsepc epc.conf 
-[sudo] password for chatchamon: 
+sudo srsepc epc.conf 
 
 Built in Release mode using commit eea87b1d8 on branch master.
 
@@ -606,18 +737,25 @@ S1 Setup Request - MCC:999, MNC:70
 S1 Setup Request - TAC 7, B-PLMN 0x99f907
 S1 Setup Request - Paging DRX v128
 Sending S1 Setup Response
+Initial UE message: NAS Message Type Unknown
+Received Initial UE message -- Service Request
+Service request -- S-TMSI 0x2c455322
+Service request -- eNB UE S1AP Id 1
+Could not find IMSI from M-TMSI. M-TMSI 0x2c455322
 Initial UE message: LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST
 Received Initial UE message -- Attach Request
-Attach request -- IMSI: 999700000062713
-Attach request -- eNB-UE S1AP Id: 1
+Attach request -- M-TMSI: 0x2c455322
+Attach request -- eNB-UE S1AP Id: 2
 Attach request -- Attach type: 2
 Attach Request -- UE Network Capabilities EEA: 11110000
 Attach Request -- UE Network Capabilities EIA: 01110000
 Attach Request -- MS Network Capabilities Present: false
 PDN Connectivity Request -- EPS Bearer Identity requested: 0
-PDN Connectivity Request -- Procedure Transaction Id: 12
+PDN Connectivity Request -- Procedure Transaction Id: 4
 PDN Connectivity Request -- ESM Information Transfer requested: false
-Downlink NAS: Sending Authentication Request
+UL NAS: Received Identity Response
+ID Response -- IMSI: 999700000062713
+Downlink NAS: Sent Authentication Request
 UL NAS: Received Authentication Response
 Authentication Response -- IMSI 999700000062713
 UE Authentication Accepted.
@@ -648,18 +786,22 @@ Unpacked Activate Default EPS Bearer message. EPS Bearer id 5
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
 Sending EMM Information
 Received UE Context Release Request. MME-UE S1AP Id 1
+No UE context to release found. MME-UE S1AP Id: 1
+UL NAS: PDN Connectivity Request
+DL NAS: Sending PDN Connectivity Reject
+Received UE Context Release Request. MME-UE S1AP Id 2
 There are active E-RABs, send release access bearers request
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
-Received UE Context Release Complete. MME-UE S1AP Id 1
+Received UE Context Release Complete. MME-UE S1AP Id 2
 UE Context Release Completed.
 Initial UE message: NAS Message Type Unknown
 Received Initial UE message -- Service Request
-Service request -- S-TMSI 0x3acabeef
-Service request -- eNB UE S1AP Id 2
+Service request -- S-TMSI 0xde527e2f
+Service request -- eNB UE S1AP Id 3
 Service Request -- Short MAC valid
 Service Request -- User is ECM DISCONNECTED
 UE previously assigned IP: 172.16.0.2
-Generating KeNB with UL NAS COUNT: 2
+Generating KeNB with UL NAS COUNT: 3
 UE Ctr TEID 0
 Sent Initial Context Setup Request. E-RAB id 5 
 Received Initial Context Setup Response
@@ -668,16 +810,40 @@ E-RAB Context -- eNB TEID 0x2; eNB GTP-U Address 127.0.1.1
 Initial Context Setup Response triggered from Service Request.
 Sending Modify Bearer Request.
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
-Received UE Context Release Request. MME-UE S1AP Id 2
+UL NAS: PDN Connectivity Request
+DL NAS: Sending PDN Connectivity Reject
+UL NAS: PDN Connectivity Request
+DL NAS: Sending PDN Connectivity Reject
+UL NAS: PDN Connectivity Request
+DL NAS: Sending PDN Connectivity Reject
+UL NAS: PDN Connectivity Request
+DL NAS: Sending PDN Connectivity Reject
+Received UE Context Release Request. MME-UE S1AP Id 3
 There are active E-RABs, send release access bearers request
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
-Received UE Context Release Complete. MME-UE S1AP Id 2
+Received UE Context Release Complete. MME-UE S1AP Id 3
 UE Context Release Completed.
+Initial UE message: NAS Message Type Unknown
+Received Initial UE message -- Service Request
+Service request -- S-TMSI 0xde527e2f
+Service request -- eNB UE S1AP Id 4
+Service Request -- Short MAC valid
+Service Request -- User is ECM DISCONNECTED
+UE previously assigned IP: 172.16.0.2
+Generating KeNB with UL NAS COUNT: 8
+UE Ctr TEID 0
+Sent Initial Context Setup Request. E-RAB id 5 
+Received Initial Context Setup Response
+E-RAB Context Setup. E-RAB id 5
+E-RAB Context -- eNB TEID 0x3; eNB GTP-U Address 127.0.1.1
+Initial Context Setup Response triggered from Service Request.
+Sending Modify Bearer Request.
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
 ```
 
 log enb
 ```
-chatchamon@chatchamon-ThinkPad-L14-Gen-2:~/.config/srsran$ sudo srsenb enb.conf 
+chatchamon@worker01:~/.config/srsran$ sudo srsenb enb.conf 
 [sudo] password for chatchamon: 
 Active RF plugins: libsrsran_rf_blade.so libsrsran_rf_zmq.so
 Inactive RF plugins: 
@@ -688,7 +854,7 @@ WARNING: cpu0 scaling governor is not set to performance mode. Realtime processi
 
 Built in Release mode using commit eea87b1d8 on branch master.
 
-ing 2 channels in RF device=bladeRF with args=default
+Opening 2 channels in RF device=bladeRF with args=default
 Supported RF device list: bladeRF zmq file
 Opening bladeRF...
 Set RX sampling rate 1.92 Mhz, filter BW: 1.92 Mhz
@@ -702,30 +868,33 @@ set TX frequency to 1842500000
 set TX frequency to 1842500000
 set RX frequency to 1747500000
 set RX frequency to 1747500000
-RACH:  tti=9661, cc=0, pci=1, preamble=47, offset=25, temp_crnti=0x46
-RACH:  tti=9601, cc=0, pci=1, preamble=21, offset=25, temp_crnti=0x47
+RACH:  tti=2551, cc=0, pci=1, preamble=8, offset=25, temp_crnti=0x46
+RACH:  tti=2461, cc=0, pci=1, preamble=11, offset=25, temp_crnti=0x47
 User 0x47 connected
 Disconnecting rnti=0x46.
 Disconnecting rnti=0x47.
-t
-Enter t to stop trace.
-RF status: O=1, U=0, L=0
-RACH:  tti=9071, cc=0, pci=1, preamble=39, offset=25, temp_crnti=0x48
+RACH:  tti=7991, cc=0, pci=1, preamble=45, offset=25, temp_crnti=0x48
 User 0x48 connected
+Disconnecting rnti=0x48.
+RACH:  tti=9471, cc=0, pci=1, preamble=20, offset=25, temp_crnti=0x49
+User 0x49 connected
 
+
+
+>> another trace on unsuccessful ping (ping request, only retransmission)
                -----------------DL----------------|-------------------------UL-------------------------
 rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
-lte    1   48   15   1    4   4.2k    7    0   0% |  14.0   11.5   40   10   146k   22    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    1     72    1    0   0% |  11.4   10.2   40   12   2.4k    1    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    1     72    1    0   0% |  12.9   10.5   40    9   1.9k    1    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
-lte    1   48   15   1    0      0    0    0   0% |   n/a   99.9    0    0      0    0    0   0%    0.0
+lte    1   4c   12   1    1    144    2    0   0% |  28.0   34.8   40   22   8.3k    2    0   0%    0.0
+lte    1   4c   12   1    1     72    1    0   0% |  27.5   35.1   40   22   4.1k    1    0   0%    0.0
+lte    1   4c   13   1    1    144    2    0   0% |  27.5   35.2   40   22   8.3k    2    0   0%    0.0
+lte    1   4c   13   1    1     72    1    0   0% |  26.1   34.5   40   22   4.1k    1    0   0%    0.0
+lte    1   4c   13   1    1     72    1    0   0% |  26.3   35.0   40   22   4.1k    1    0   0%    0.0
+lte    1   4c   13   1    1    144    2    0   0% |  26.4   34.2   40   22   8.3k    2    0   0%    0.0
+lte    1   4c   13   1    1    144    2    0   0% |  25.9   34.5   40   22   8.3k    2    0   0%    0.0
+lte    1   4c   13   1    1    144    2    0   0% |  27.2   34.8   40   22   8.3k    2    0   0%    0.0
+lte    1   4c   14   1    1    144    2    0   0% |  26.4   35.2   40   22   8.3k    2    0   0%    0.0
+lte    1   4c   14   1    1     72    1    0   0% |  27.5   35.0   40   22   4.1k    1    0   0%    0.0
+lte    1   4c   14   1    1     72    1    0   0% |  25.1   34.6   40   22   4.1k    1    0   0%    0.0
 ```
 </details>
 
