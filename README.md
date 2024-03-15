@@ -12,9 +12,12 @@
 3.1. [quectel for srsRAN4G](#quectel_srsRAN4G)
 
 ## successful test case
-- quectel + sim 5G to internet
+- quectel + sim true 5G to internet
 	- to ping
 	- to iperf (on 5G to UNAI)
+- quectel + sim true 4G (selected) to internet
+    - to ping
+    - to iperf (on 4G to UNAI)
 - quectel + sysmocom sim to srsRAN4G
 
 ## 0. setup Antenna
@@ -920,3 +923,29 @@ Connecting to host <IP>, port 9051
 [  5]   0.00-10.00  sec  5.55 MBytes  4.66 Mbits/sec   18             sender
 [  5]   0.00-10.07  sec  5.43 MBytes  4.53 Mbits/sec                  receiver
 ```
+
+### 3.3. quectel to enable computator to connect to 4G and iperf to UNAI
+```
+chatchamon@worker01:~$ iperf3 -c 203.185.137.212 -p 9051 -b 10M
+Connecting to host 203.185.137.212, port 9051
+[  5] local 10.97.9.86 port 60844 connected to 203.185.137.212 port 9051
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  1.32 MBytes  11.0 Mbits/sec    0    133 KBytes       
+[  5]   1.00-2.00   sec  1.08 MBytes  9.05 Mbits/sec   32   20.3 KBytes       
+[  5]   2.00-3.00   sec   374 KBytes  3.06 Mbits/sec    1   27.1 KBytes       
+[  5]   3.00-4.00   sec   873 KBytes  7.15 Mbits/sec    0   44.7 KBytes       
+[  5]   4.00-5.00   sec   624 KBytes  5.11 Mbits/sec   12   14.9 KBytes       
+[  5]   5.00-6.00   sec   499 KBytes  4.09 Mbits/sec    0   31.2 KBytes       
+[  5]   6.00-7.00   sec   998 KBytes  8.17 Mbits/sec    0   48.8 KBytes       
+[  5]   7.00-8.00   sec   748 KBytes  6.13 Mbits/sec    3   23.0 KBytes       
+[  5]   8.00-9.00   sec   748 KBytes  6.13 Mbits/sec    0   39.3 KBytes       
+[  5]   9.00-10.00  sec   748 KBytes  6.13 Mbits/sec    4   27.1 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  7.87 MBytes  6.61 Mbits/sec   52             sender
+[  5]   0.00-10.04  sec  7.68 MBytes  6.42 Mbits/sec                  receiver
+```
+note: 
+- interface wwan0
+- 4G is slower than 5G, not successful in qping AT command, mostly receive error QPING: 569
+- if wwan0 is not presented -> `sudo ip link set wwan0 up`
