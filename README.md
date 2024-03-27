@@ -18,7 +18,7 @@
 - quectel + sim true 4G (selected) to internet
     - to ping
     - to iperf (on 4G to UNAI)
-- quectel + sysmocom sim to srsRAN4G
+- quectel on rpi w/ sysmocom sim connect to srsRAN4G
 
 ## 0. setup Antenna
 - connect to ANT0 and ANT1 (see more on hardware design)
@@ -636,29 +636,110 @@ at+qnwprefcfg = "mode_pref", LTE
 ```
 ## 3. use case
 ### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
+0. config open5gs and firewall
+```
+### Enable IPv4/IPv6 Forwarding
+>> sudo sysctl -w net.ipv4.ip_forward=1
+>> sudo sysctl -w net.ipv6.conf.all.forwarding=1
+
+### Add NAT Rule
+>> sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
+
+>> sudo ufw status
+Status: inactive
+```
+
 1. masq the interface
-```
-cd ~/.config/srsran
-sudo srsepc_if_masq.sh wlp9s0
-ifconfig
-```
-2. run epc
 ```
 >> cd ~/.config/srsran
 >> ifconfig
+br-2d2baf4f3a8c: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 10.53.1.1  netmask 255.255.255.0  broadcast 10.53.1.255
+        ether 02:42:04:8a:c3:1c  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+br-36c6988d1fa9: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.19.1.1  netmask 255.255.255.0  broadcast 172.19.1.255
+        ether 02:42:67:03:3d:9d  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:15:f6:a6:8a  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s31f6: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        ether 38:f3:ab:48:87:a1  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 16  memory 0xae500000-ae520000  
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 220551  bytes 34295767 (34.2 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 220551  bytes 34295767 (34.2 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ogstun: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1400
+        inet 10.45.0.1  netmask 255.255.0.0  destination 10.45.0.1
+        inet6 2001:db8:cafe::1  prefixlen 48  scopeid 0x0<global>
+        inet6 fe80::5402:c1e3:c1fd:909e  prefixlen 64  scopeid 0x20<link>
+        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 96  bytes 26868 (26.8 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+srs_spgw_sgi: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500
+        inet 172.16.0.1  netmask 255.255.255.0  destination 172.16.0.1
+        inet6 fe80::b78c:6490:dc3:d779  prefixlen 64  scopeid 0x20<link>
+        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)
+        RX packets 6344  bytes 965830 (965.8 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 12626  bytes 11671286 (11.6 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+wlp9s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.221.40.241  netmask 255.255.248.0  broadcast 10.221.47.255
+        inet6 fe80::211c:6916:6b4:453  prefixlen 64  scopeid 0x20<link>
+        ether c0:3c:59:6e:c0:b7  txqueuelen 1000  (Ethernet)
+        RX packets 836003  bytes 1062674583 (1.0 GB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 128719  bytes 17799853 (17.7 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
 >> route
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 default         _gateway        0.0.0.0         UG    600    0        0 wlp9s0
-default         _gateway        0.0.0.0         UG    21050  0        0 wwan0
+10.45.0.0       0.0.0.0         255.255.0.0     U     0      0        0 ogstun
 10.53.1.0       0.0.0.0         255.255.255.0   U     0      0        0 br-2d2baf4f3a8c
 10.221.40.0     0.0.0.0         255.255.248.0   U     600    0        0 wlp9s0
-link-local      0.0.0.0         255.255.0.0     U     1000   0        0 wwan0
-172.16.0.0      0.0.0.0         255.255.255.248 U     1050   0        0 wwan0
+link-local      0.0.0.0         255.255.0.0     U     1000   0        0 wlp9s0
+172.16.0.0      0.0.0.0         255.255.255.0   U     0      0        0 srs_spgw_sgi
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
 172.19.1.0      0.0.0.0         255.255.255.0   U     0      0        0 br-36c6988d1fa9
 
 >> sudo srsepc_if_masq.sh wlp9s0
+>> ifconfig
+```
+2. run epc
+```
+>> cd ~/.config/srsran
 >> sudo srsepc epc.conf
 ```
 in case route is not presented
@@ -692,13 +773,21 @@ successfully enabled the modem
 ```
 >> lsusb
 >> sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+>> sudo ip link set wwan0 down
+>> echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
+>> sudo ip link set wwan0 up
+
 >> sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
->> sudo udhcpc -q -f -i wlp9s0
->> ifconfig wlp9s0
+
+>> sudo udhcpc -q -f -i wwan0
+>> ifconfig 
 >> ping -I wwan0 -c 5 8.8.8.8
 ```
 5. click connect on the network setting
+5.1. on laptop in Ubuntu OS
 ![Screenshot from 2024-03-15 14-20-37](https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3)
+5.2. on RPI 3
+![unnamed](https://github.com/pchat-imm/srsRAN/assets/40858099/c4d64b51-ad38-4f55-8768-18c9bf197c0f)
 
 6. run AT command to ping to the gNB
 ```
@@ -740,25 +829,18 @@ S1 Setup Request - MCC:999, MNC:70
 S1 Setup Request - TAC 7, B-PLMN 0x99f907
 S1 Setup Request - Paging DRX v128
 Sending S1 Setup Response
-Initial UE message: NAS Message Type Unknown
-Received Initial UE message -- Service Request
-Service request -- S-TMSI 0x2c455322
-Service request -- eNB UE S1AP Id 1
-Could not find IMSI from M-TMSI. M-TMSI 0x2c455322
 Initial UE message: LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST
 Received Initial UE message -- Attach Request
-Attach request -- M-TMSI: 0x2c455322
-Attach request -- eNB-UE S1AP Id: 2
+Attach request -- IMSI: 999700000062713
+Attach request -- eNB-UE S1AP Id: 1
 Attach request -- Attach type: 2
 Attach Request -- UE Network Capabilities EEA: 11110000
 Attach Request -- UE Network Capabilities EIA: 01110000
 Attach Request -- MS Network Capabilities Present: false
 PDN Connectivity Request -- EPS Bearer Identity requested: 0
-PDN Connectivity Request -- Procedure Transaction Id: 4
+PDN Connectivity Request -- Procedure Transaction Id: 1
 PDN Connectivity Request -- ESM Information Transfer requested: false
-UL NAS: Received Identity Response
-ID Response -- IMSI: 999700000062713
-Downlink NAS: Sent Authentication Request
+Downlink NAS: Sending Authentication Request
 UL NAS: Received Authentication Response
 Authentication Response -- IMSI 999700000062713
 UE Authentication Accepted.
@@ -789,64 +871,36 @@ Unpacked Activate Default EPS Bearer message. EPS Bearer id 5
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
 Sending EMM Information
 Received UE Context Release Request. MME-UE S1AP Id 1
-No UE context to release found. MME-UE S1AP Id: 1
-UL NAS: PDN Connectivity Request
-DL NAS: Sending PDN Connectivity Reject
-Received UE Context Release Request. MME-UE S1AP Id 2
 There are active E-RABs, send release access bearers request
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
-Received UE Context Release Complete. MME-UE S1AP Id 2
+Received UE Context Release Complete. MME-UE S1AP Id 1
 UE Context Release Completed.
 Initial UE message: NAS Message Type Unknown
 Received Initial UE message -- Service Request
-Service request -- S-TMSI 0xde527e2f
-Service request -- eNB UE S1AP Id 3
+Service request -- S-TMSI 0xb847c193
+Service request -- eNB UE S1AP Id 2
 Service Request -- Short MAC valid
 Service Request -- User is ECM DISCONNECTED
 UE previously assigned IP: 172.16.0.2
-Generating KeNB with UL NAS COUNT: 3
+Generating KeNB with UL NAS COUNT: 2
 UE Ctr TEID 0
 Sent Initial Context Setup Request. E-RAB id 5 
+Found UE for Downlink Notification 
+MME Ctr TEID 0x1, IMSI: 999700000062713
 Received Initial Context Setup Response
 E-RAB Context Setup. E-RAB id 5
 E-RAB Context -- eNB TEID 0x2; eNB GTP-U Address 127.0.1.1
 Initial Context Setup Response triggered from Service Request.
 Sending Modify Bearer Request.
 Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
-UL NAS: PDN Connectivity Request
-DL NAS: Sending PDN Connectivity Reject
-UL NAS: PDN Connectivity Request
-DL NAS: Sending PDN Connectivity Reject
-UL NAS: PDN Connectivity Request
-DL NAS: Sending PDN Connectivity Reject
-UL NAS: PDN Connectivity Request
-DL NAS: Sending PDN Connectivity Reject
-Received UE Context Release Request. MME-UE S1AP Id 3
-There are active E-RABs, send release access bearers request
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
-Received UE Context Release Complete. MME-UE S1AP Id 3
-UE Context Release Completed.
-Initial UE message: NAS Message Type Unknown
-Received Initial UE message -- Service Request
-Service request -- S-TMSI 0xde527e2f
-Service request -- eNB UE S1AP Id 4
-Service Request -- Short MAC valid
-Service Request -- User is ECM DISCONNECTED
-UE previously assigned IP: 172.16.0.2
-Generating KeNB with UL NAS COUNT: 8
-UE Ctr TEID 0
-Sent Initial Context Setup Request. E-RAB id 5 
-Received Initial Context Setup Response
-E-RAB Context Setup. E-RAB id 5
-E-RAB Context -- eNB TEID 0x3; eNB GTP-U Address 127.0.1.1
-Initial Context Setup Response triggered from Service Request.
-Sending Modify Bearer Request.
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
+Modify Bearer Request received after Downling Data Notification was sent
+T3413 expired -- Could not page the ue.
+Received GTP-C PDU. Message type: GTPC_MSG_TYPE_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION
 ```
 
 log enb
 ```
-chatchamon@worker01:~/.config/srsran$ sudo srsenb enb.conf 
+sudo srsenb enb.conf 
 [sudo] password for chatchamon: 
 Active RF plugins: libsrsran_rf_blade.so libsrsran_rf_zmq.so
 Inactive RF plugins: 
@@ -871,20 +925,38 @@ set TX frequency to 1842500000
 set TX frequency to 1842500000
 set RX frequency to 1747500000
 set RX frequency to 1747500000
-RACH:  tti=2551, cc=0, pci=1, preamble=8, offset=25, temp_crnti=0x46
-RACH:  tti=2461, cc=0, pci=1, preamble=11, offset=25, temp_crnti=0x47
+RF status: O=1, U=0, L=0
+RACH:  tti=3351, cc=0, pci=1, preamble=29, offset=25, temp_crnti=0x47
 User 0x47 connected
-Disconnecting rnti=0x46.
-Disconnecting rnti=0x47.
-RACH:  tti=7991, cc=0, pci=1, preamble=45, offset=25, temp_crnti=0x48
-User 0x48 connected
-Disconnecting rnti=0x48.
-RACH:  tti=9471, cc=0, pci=1, preamble=20, offset=25, temp_crnti=0x49
-User 0x49 connected
+               -----------------DL----------------|-------------------------UL-------------------------
+rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
+lte    1   47   15   1   11   233k   45    1   2% |  25.1   26.5   34   21   248k   46    0   0%    0.0
+lte    1   47   14   1    1     72    1    0   0% |  25.1   27.8   34   21    20k    5    0   0%    0.0
+lte    1   47   13   1    1    144    2    0   0% |  23.6   29.8   30   21    24k    6    0   0%    0.0
+lte    1   47   13   1    1     72    1    0   0% |  23.5   29.4   31   22   4.1k    1    0   0%    0.0
+lte    1   47   13   1    9    17k   16    0   0% |  24.1   29.3   31   21   105k   32    4  11%    0.0
+lte    1   47   14   1    9    63k   24    0   0% |  25.0   28.1   31   21   130k   31    0   0%    0.0
+lte    1   47   15   1    1    216    3    0   0% |  25.0   26.8   33   22    48k    9    0   0%    0.0
+lte    1   47   15   1   11    16k    8    0   0% |  25.0   26.2   34   21    41k    9    0   0%    0.0
+lte    1   47   13   1    1    288    4    0   0% |  21.4   27.3   31   20    82k   20    0   0%    0.0
 
+               -----------------DL----------------|-------------------------UL-------------------------
+rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
+lte    1   47   15   1    8   2.1k    4    0   0% |  19.0   24.7   37   19    13k    3    0   0%    0.0
+lte    1   47   15   1    7   2.6k    6    0   0% |  20.1   24.5   37   17    21k    5    0   0%    0.0
+lte    1   47   15   1    8   2.0k    4    0   0% |  20.5   25.0   37   20    13k    3    0   0%    0.0
+lte    1   47   15   1    9   2.0k    4    0   0% |  20.6   25.0   37   19    13k    3    0   0%    0.0
+lte    1   47   15   1    2    952    3    0   0% |  21.3   25.0   37   20    13k    3    0   0%    0.0
+lte    1   47   15   1   11   3.2k    5    0   0% |  20.8   24.7   38   22    12k    3    0   0%    0.0
+lte    1   47   15   1    9   2.1k    4    0   0% |  20.0   23.9   37   19    13k    3    0   0%    0.0
+lte    1   47   15   1    8   2.0k    4    0   0% |  20.2   24.8   37   18    13k    3    0   0%    0.0
+lte    1   47   15   1    7    920    3    0   0% |  20.1   24.5   37   19    13k    3    0   0%    0.0
+lte    1   47   15   1    8   3.2k    5    0   0% |  19.6   24.2   37   18    13k    3    0   0%    0.0
+lte    1   47   15   1    9   2.0k    4    0   0% |  19.0   23.7   38   18    13k    3    0   0%    0.0
+```
 
-
->> another trace on unsuccessful ping (ping request, only retransmission)
+- trace on unsuccessful ping (ping request, only retransmission)
+```
                -----------------DL----------------|-------------------------UL-------------------------
 rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
 lte    1   4c   12   1    1    144    2    0   0% |  28.0   34.8   40   22   8.3k    2    0   0%    0.0
