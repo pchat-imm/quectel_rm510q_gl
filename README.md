@@ -152,11 +152,11 @@ sudo udhcpc -q -f -i wwan0
 	udhcpc: sending select for 10.38.223.119
 	udhcpc: lease of 10.38.223.119 obtained, lease time 7200
 ```
-in case you connect quectel with srsRAN_4G that you have already masq the interface to `wlp9s0' the selected interface will be changed
+<!-- in case you connect quectel with srsRAN_4G that you have already masq the interface to `wlp9s0' the selected interface will be changed
 ```
 sudo udhcpc -q -f -i wlp9s0
 ```
-
+ -->
 - check the assigned IP address
 ```
 >> ifconfig wwan0
@@ -184,7 +184,7 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 4006ms
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
-```
+<!-- ```
 >> ping -I wlp9s0 www.chula.ac.th -c 5
 PING www.chula.ac.th(2a02:e980:12c::4d (2a02:e980:12c::4d)) from 2001:fb1:d2:2a19:97c7:e47f:14f1:45fc wlp9s0: 56 data bytes
 64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=1 ttl=56 time=9.10 ms
@@ -196,7 +196,7 @@ PING www.chula.ac.th(2a02:e980:12c::4d (2a02:e980:12c::4d)) from 2001:fb1:d2:2a1
 --- www.chula.ac.th ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 4010ms
 rtt min/avg/max/mdev = 9.101/10.906/11.659/0.919 ms
-```
+``` -->
 
 <details close>
 <summary><i> sysmocom sim </i></summary>
@@ -223,7 +223,7 @@ successfully connected the modem
 ```
 
 <details close>
-<summary> sudo mmcli -m 2 </summary>
+<summary> sudo mmcli -m 2 connect to lte </summary>
 
 ```
 sudo mmcli -m 22
@@ -309,14 +309,14 @@ sudo mmcli -m 22
 ```
 </details>
 
-then set interface up, in my case is wlp9s0
+<!-- then set interface up, in my case is wlp9s0
 ```
 sudo ip link set wlp9s0 up
 ```
 then ping
 ```
 ping 8.8.8.8 -I wlp9s0
-```
+``` -->
 ## 2. AT command
 ### 2.1. start AT command with minicom <a name = "atminicom_basic"></a>
 ```
@@ -457,7 +457,66 @@ AT+QNWPREFCFG="nr5g_band"
 ```
 </details>
 
-### 2.2. AT command for start using 5G <a name = "atminicom_5G"></a>
+### 2.2 (new) AT command for start using 5G <a name = "atminicom_5G"></a>
+from: Analysis of Real-Time Video Streaming and Throughput Performance Using the Open Air Interface Stack on Multiple UEs
+- unlock quectel module
+```
+AT+QMBNCFG="select","Row_Commercial"
+```
+- reboot the quectel (always wait for the reboot to finish)
+```
+at+cfun=1,1
+OK
+RDY
++CPIN: READY
++QUSIM: 1
++CFUN: 1
++QIND: SMS DONE
++QIND: PB DONE
+TATE0
+OK
+OK
+OK
++CRSM: 148,8,""
+OK
++CEMODE: 2
+OK
++QGPS: (1-4),(1-255),(1-3),(100-65535)
+OK
++CPMS: "ME",18,127,"ME",18,127,"ME",18,127
+OK
++CTZU: (0,1)
+OK
++CCLK: "24/01/18,08:58:19+28"
+OK
+RM510QGLAAR11A03M4G                                                             
+OK                                                                              
+RM510QGLAAR11A03M4G_01.001.01.001                                               
+OK 
+```
+- see 5g band by quectel to configure
+```
+AT+QNWPREFCFG="nr5g_band"
+```
+- see the mode, then select `nr5g` mode to set mode to 5G SA
+```
+AT+QNWPREFCFG="mode_pref"
+AT+QNWPREFCFG="mode_pref",nr5g
+```
+- enable 5G operation both SA and NSA - (0 is no mode is disable)
+```
+AT+QNWPREFCFG+"nr5g_disable_mode",0
+```
+- specify PDP context (set Protocol to IPv4, and set APN)
+```
+AT+CGDCONT=1,"IP",<APN>
+
+# if another APN is showed up, remove it
+AT+CGDCONT=<cid>
+```
+(below can skip to the next session)
+
+<!-- ### 2.2. AT command for start using 5G <a name = "atminicom_5G"></a>
 ##### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
 - quectel information
 ```
@@ -503,11 +562,16 @@ RM510QGLAAR11A03M4G
 OK                                                                              
 RM510QGLAAR11A03M4G_01.001.01.001                                               
 OK 
-```
+``` -->
 - activate PDP context (if it show +CME ERROR: 30 means you didn't wait for the reboot to finish,reboot again and wait for it to finish)
 ```
 AT+CGACT=1,1
 +CCLK: "24/01/18,08:39:27+28"                                                     OK
+```
+- define PDP context, set it to IPv4
+```
+AT+CGDCONT: define PDP context
+AT+CGDCONT=1,"IP",<APN>,<PDP_addr>
 ```
 - show PDP address (it will return address in "". If there is no address here, reboot again and wait for it to finish)
 ```
