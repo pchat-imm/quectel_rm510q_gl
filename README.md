@@ -4,17 +4,19 @@
 
 <!-- toc -->
 
-  * [successful test case](#successful-test-case)
-  * [0. setup Antenna](#0-setup-antenna)
-  * [1. setup data connection](#1-setup-data-connection)
-    + [1.1. setting up a data connection over QMI interface using libqmi](#11-setting-up-a-data-connection-over-qmi-interface-using-libqmi-)
-  * [sudo mmcli -m 22](#sudo-mmcli--m-22)
-  * [IP | supported: ipv4, ipv6, ipv4v6](#ip----------------------supported-ipv4-ipv6-ipv4v6)
-- [if another APN is showed up, remove it](#if-another-apn-is-showed-up-remove-it)
-    + [Enable IPv4/IPv6 Forwarding](#enable-ipv4ipv6-forwarding)
-    + [Add NAT Rule](#add-nat-rule)
-    + [Enable IPv4/IPv6 Forwarding](#enable-ipv4ipv6-forwarding-1)
-    + [Add NAT Rule](#add-nat-rule-1)
+- [successful test case](#successful-test-case)
+- [0. setup Antenna](#0-setup-antenna)
+- [1. setup data connection](#1-setup-data-connection)
+  * [1.1. setting up a data connection over QMI interface using libqmi](#11-setting-up-a-data-connection-over-qmi-interface-using-libqmi-)
+  * [1.2. setting up a data connection use mmcli](#12-setting-up-a-data-connection-use-mmcli-)
+      - [from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829](#from-httpsgithubcomsrsransrsran_projectdiscussions426%23discussioncomment-8233829)
+- [2. AT command](#2-at-command)
+  * [2.1. start minicom](#21-start-minicom-)
+  * [2.2 AT command basic](#22-at-command-basic)
+- [3. use case](#3-use-case)
+  * [3.1. quectel as a UE for srsRAN4G](#31-quectel-as-a-ue-for-srsran4g-)
+  * [3.2. quectel to enable computator to connect to 5G and iperf to UNAI](#32-quectel-to-enable-computator-to-connect-to-5g-and-iperf-to-unai)
+  * [3.3. quectel to enable computator to connect to 4G and iperf to UNAI](#33-quectel-to-enable-computator-to-connect-to-4g-and-iperf-to-unai)
 
 <!-- tocstop -->
 
