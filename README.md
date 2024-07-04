@@ -1,15 +1,22 @@
 ## Quectel_RM510Q_GL
 
 ## Table of contents
-1. set data connection \
-1.1. [setting up a data connection over QMI interface using libqmi](#setupqmi) \
-1.2. [setting up a data connection use mmcli](#setupmmcli) \
-2. AT command \
-2.1. [start AT command with minicom](#atminicom_basic) \
-2.2. [AT command for start using 5G](#atminicom_5G) \
-2.3. [AT command for start using 4G only](#atminicom_4G) \
-3. use case \
-3.1. [quectel for srsRAN4G](#quectel_srsRAN4G)
+
+<!-- toc -->
+
+  * [successful test case](#successful-test-case)
+  * [0. setup Antenna](#0-setup-antenna)
+  * [1. setup data connection](#1-setup-data-connection)
+    + [1.1. setting up a data connection over QMI interface using libqmi](#11-setting-up-a-data-connection-over-qmi-interface-using-libqmi-)
+  * [sudo mmcli -m 22](#sudo-mmcli--m-22)
+  * [IP | supported: ipv4, ipv6, ipv4v6](#ip----------------------supported-ipv4-ipv6-ipv4v6)
+- [if another APN is showed up, remove it](#if-another-apn-is-showed-up-remove-it)
+    + [Enable IPv4/IPv6 Forwarding](#enable-ipv4ipv6-forwarding)
+    + [Add NAT Rule](#add-nat-rule)
+    + [Enable IPv4/IPv6 Forwarding](#enable-ipv4ipv6-forwarding-1)
+    + [Add NAT Rule](#add-nat-rule-1)
+
+<!-- tocstop -->
 
 ## successful test case
 - quectel + sim true 5G to internet
@@ -19,9 +26,12 @@
     - to ping
     - to iperf (on 4G to UNAI)
 - quectel on rpi w/ sysmocom sim connect to srsRAN4G
+    - ping
+    - connect to web server, run speedtest
 
 ## 0. setup Antenna
 - connect to ANT0 and ANT1 (see more on hardware design)
+- in case want to enhance recieve signal quality, connect ANT2 and ANT3
 
 ## 1. setup data connection
 ### 1.1. setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
@@ -48,15 +58,15 @@ Bus 003 Device 012: ID 2c7c:0800 Quectel Wireless Solutions Co., Ltd. RM510Q-GL
 - get operating mode
 ```
 sudo qmicli -d /dev/cdc-wdm0 --dms-get-operating-mode 
-```
-```
+
 [/dev/cdc-wdm0] Operating mode retrieved:
 	Mode: 'online'
 	HW restricted: 'no'
 ```
 If not `online` set it as online
 ```
->> sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
+sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
+
 [/dev/cdc-wdm0] Operating mode set successfully
 ```
 <details close>
@@ -107,18 +117,16 @@ Slot [1]:
 
 - configure the network interface
 ```
+## down the interface
 sudo ip link set wwan0 down
-```
-set the interface into raw mode (IP packets not encapsulated in Ethernet frames)
-```
+
+## set the interface into raw mode (IP packets not encapsulated in Ethernet frames)
 echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
-```
-then restart the interface
-```
+
+## restart the interface
 sudo ip link set wwan0 up
 ```
-
-- when the wwan0 is up, connect the network by changing apn, username, password
+- when the wwan0 is up, connect the network by changing `apn, username, password`
 ```
 >> sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='Your_APN',username='Your_Username',password='Your_Password'" --client-no-release-cid
 
@@ -132,7 +140,7 @@ my client sim card setup
 ```
 sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='internet',username='true',password='true'" --client-no-release-cid
 ```
-with sysmocom sim card
+sysmocom sim card
 ```
 sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
 error: couldn't start network: QMI protocol error (14): 'CallFailed'
@@ -152,11 +160,6 @@ sudo udhcpc -q -f -i wwan0
 	udhcpc: sending select for 10.38.223.119
 	udhcpc: lease of 10.38.223.119 obtained, lease time 7200
 ```
-<!-- in case you connect quectel with srsRAN_4G that you have already masq the interface to `wlp9s0' the selected interface will be changed
-```
-sudo udhcpc -q -f -i wlp9s0
-```
- -->
 - check the assigned IP address
 ```
 >> ifconfig wwan0
@@ -184,19 +187,6 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 4006ms
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
-<!-- ```
->> ping -I wlp9s0 www.chula.ac.th -c 5
-PING www.chula.ac.th(2a02:e980:12c::4d (2a02:e980:12c::4d)) from 2001:fb1:d2:2a19:97c7:e47f:14f1:45fc wlp9s0: 56 data bytes
-64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=1 ttl=56 time=9.10 ms
-64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=2 ttl=56 time=11.3 ms
-64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=3 ttl=56 time=11.4 ms
-64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=4 ttl=56 time=11.7 ms
-64 bytes from 2a02:e980:12c::4d (2a02:e980:12c::4d): icmp_seq=5 ttl=56 time=11.1 ms
-
---- www.chula.ac.th ping statistics ---
-5 packets transmitted, 5 received, 0% packet loss, time 4010ms
-rtt min/avg/max/mdev = 9.101/10.906/11.659/0.919 ms
-``` -->
 
 <details close>
 <summary><i> sysmocom sim </i></summary>
@@ -208,20 +198,37 @@ rtt min/avg/max/mdev = 9.101/10.906/11.659/0.919 ms
 
 ### 1.2. setting up a data connection use mmcli <a name = "setupmmcli"></a>
 ##### from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829
-list connected modem
+note: for using the UE first time, it is not recommend to connect using `mmcli`, `qmicli` will be better
+- connect the modem
 ```
->> sudo mmcli -L
+## list connected modem
+sudo mmcli -L
     /org/freedesktop/ModemManager1/Modem/2 [Quectel] RM510Q-GL
-```
-The above has modem number = 2, then connect the network. The simple-connect command initiate a PDN connection for DNN "srsapn".
-```
->> sudo mmcli -m 22 -e
-successfully enabled the modem
 
->> sudo mmcli -m 22 --simple-connect="apn=srsapn"
-successfully connected the modem
-```
+## enable then connect the network
+sudo mmcli -m 22 -e
+    successfully enabled the modem
 
+## connect to the network using apn
+sudo mmcli -m 22 --simple-connect="apn=srsapn"
+    successfully connected the modem
+```
+get ip address and set link up
+```
+sudo ip link set wwan0 up
+sudo udhcpc -q -f -i wwan0
+ifconfig wwan0
+```
+in case the `udhcpc` not working, just add ip directly
+```
+sudo ip a add 10.45.0.2/24 dev wwan0
+ip a
+```
+then ping to see if it can access internet
+```
+ping -I wwan0 8.8.8.8
+ping -I wwan0 10.45.0.1   # core network
+```
 <details close>
 <summary> sudo mmcli -m 2 connect to lte </summary>
 
@@ -309,16 +316,8 @@ sudo mmcli -m 22
 ```
 </details>
 
-<!-- then set interface up, in my case is wlp9s0
-```
-sudo ip link set wlp9s0 up
-```
-then ping
-```
-ping 8.8.8.8 -I wlp9s0
-``` -->
 ## 2. AT command
-### 2.1. start AT command with minicom <a name = "atminicom_basic"></a>
+### 2.1. start minicom <a name = "atminicom_basic"></a>
 ```
 >> sudo dmesg | grep /dev/ttyUSB
 >> sudo dmesg | grep ttyUSB
@@ -350,7 +349,7 @@ everytime finish `Save setup as dfl` before `exit`
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
 
-### 2.2 AT command basic to check if connect to internet properly 
+### 2.2 AT command basic 
 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
@@ -364,225 +363,131 @@ basic minicom menu
 - usign ctrl A + C = clear screen
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
+
+1. check connection, enable module, and reboot
 ```
->> ps aux | grep minicom
->> sudo kill -SIGTERM <PID>
-```
-1. check connection to the modem
-```
+## check if AT command on
 AT
 OK
-```
 
-2. check current network selection mode of the modem
-```
-AT+COPS?
-+COPS: 0,0,"TRUE-H TRUE-H",13
-+COPS: 0,0,"TRUE-H TRUE-H",7  
-+COPS: (1,"TRUE-H","TRUE-H","52004",12),(2,"TRUE-H","TRUE-H","52004",7,        
-```
-In case return no network name, could be that you set connecting to 5G only, which might not be available there. \
-So, change the setting back to any network (3G, 4G, 5G) to be able to connect to other communication technology.
-```
-AT+COPS=0 		// Automatic Network Selection
+## check usbnet
+AT+QCFG="data_interface"        ## 0 = usb, 1 = pcle
 
-AT+QNWPREFCFG="mode_pref",LTE:NR5G 	// set RAT to LTE & 5G NR
-```
-
-<details close>
-<summary> Other AT Command </summary>
-
-```                                                                  
-AT+CGFCONT?                                                                     
-+CGDCONT: 1,"IPV4V6","","0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",0,0,0,0,,,,,,,,,"",,,0
-+CGDCONT: 2,"IPV4V6","ims","0.0.0.0.0.0.0.                                   
-
->> Enter PIN
-AT+CPIN?                                                                         
+## check if device recognise sim
+AT+CPIN?
 +CPIN: READY
 
-AT+QNWCFG=?
-+QNWCFG: "lte_cdrx",(0,1),(0,1)
-+QNWCFG: "nr5g_cdrx",(0,1)
-+QNWCFG: "csi_ctrl",(0,1),(0,1)
-+QNWCFG: "lte_csi",(0-31),<ri>,
-
->> Query Carrier Aggregration Parameters
-AT+QCAINFO
-+QCAINFO: "PCC",250,50,"LTE BAND 1",1,167,-116,-13,-86,7
-
->> Query Primary Serving Cell and Neighbour Cell
-AT+QENG=?
-+QENG: "servingcell","NOCONN"                                         
-+QENG: "LTE","FDD",520,04,4D8002,167,250,1,3,3,7E7,-128,-17,-94,7,10,23-
-+QENG: "NR5G-NSA",                                                    
-OK
-```
-
-- Configure Network Seacrching Preferences
-```
-AT+QNWPREFCFG=?
-+QNWPREFCFG: "gw_band",B1:...:BN
-+QNWPREFCFG: "lte_band",B1:...:BN
-+QNWPREFCFG: "nsa_nr5g_band",B1:...:BN
-+QNWPREFCFG: "nr5g_band",B1:...:BN
-+QNWPREFCFG: "mode_pref",RAT1:...:RATN
-+QNWPREFCFG: "srv_domain",(0-2)
-+QNWPREFCFG: "voice_domain",(0-3)
-+QNWPREFCFG: "roam_pref",(1,3,255)
-+QNWPREFCFG: "ue_usage_setting",(0,1)
-+QNWPREFCFG: "policy_band"
-+QNWPREFCFG: "ue_capabi
-```
-Explanation: \
- - gw_band = WCDMA Band Configure
- - lte_band
- - nsa_nr5g_band
- - nr5g_band 
- - mode_pref = Network Search Mode Configuration
-```
-AT+QNWPREFCFG="mode_pref"			// query the current config
-+QNWPREFCFG: "mode_pref",AUTO  
+## enable module
+AT+QMBNCFG="select","Row_commercial"
 OK
 
-AT+QNWPREFCFG="mode_pref",LTE 		// set RAT to LTE only
+## reboot (or unplug -> repulg) 
+AT+CFUN=1,1                     ## wait 30 sec!!!
+```
+<details close>
+    <summary> result AT+CFUN=1,1 </summary>
+
+```
+at+cfun=1,1
 OK
-
-AT+QNWPREFCFG="mode_pref",LTE:NR5G 	// set RAT to LTE & 5G NR
+RDY
++CPIN: READY
++QUSIM: 1
++CFUN: 1
++QIND: SMS DONE
++QIND: PB DONE
+TATE0
 OK
-
-
-AT+QNWPREFCFG="nr5g_band"
-+QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:719
+OK
+OK
++CRSM: 148,8,""
+OK
++CEMODE: 2
+OK
++QGPS: (1-4),(1-255),(1-3),(100-65535)
+OK
++CPMS: "ME",18,127,"ME",18,127,"ME",18,127
+OK
++CTZU: (0,1)
+OK
++CCLK: "24/01/18,08:58:19+28"
+OK
+RM510QGLAAR11A03M4G                                                             
+OK                                                                              
+RM510QGLAAR11A03M4G_01.001.01.001                                               
+OK 
 ```
 </details>
 
-### 2.2 (new) AT command for start using 5G <a name = "atminicom_5G"></a>
-from: Analysis of Real-Time Video Streaming and Throughput Performance Using the Open Air Interface Stack on Multiple UEs
-- unlock quectel module
-```
-AT+QMBNCFG="select","Row_Commercial"
-```
-- reboot the quectel (always wait for the reboot to finish)
-```
-at+cfun=1,1
-OK
-RDY
-+CPIN: READY
-+QUSIM: 1
-+CFUN: 1
-+QIND: SMS DONE
-+QIND: PB DONE
-TATE0
-OK
-OK
-OK
-+CRSM: 148,8,""
-OK
-+CEMODE: 2
-OK
-+QGPS: (1-4),(1-255),(1-3),(100-65535)
-OK
-+CPMS: "ME",18,127,"ME",18,127,"ME",18,127
-OK
-+CTZU: (0,1)
-OK
-+CCLK: "24/01/18,08:58:19+28"
-OK
-RM510QGLAAR11A03M4G                                                             
-OK                                                                              
-RM510QGLAAR11A03M4G_01.001.01.001                                               
-OK 
-```
-- see 5g band by quectel to configure
+2. set module as 5G
 ```
 AT+QNWPREFCFG="nr5g_band"
+AT+QNWPREFCFG="mode_pref",NR5G
+AT+QNWPREFCFG="nr5g_disable_mode",0   ## enable 5G operation both SA and NSA - (0 is no mode is disable)
+AT+QNWPREFCFG="roam_pref",1-255       ## 255 = Roaming
 ```
-- see the mode, then select `nr5g` mode to set mode to 5G SA
+3. check registration status
 ```
-AT+QNWPREFCFG="mode_pref"
-AT+QNWPREFCFG="mode_pref",nr5g
+AT+CREG=?        
++CREG:1,0       ## 1 = registered home network
+                ## 5 = registered, roaming
+AT+C5GREG?      ## 0 = disable / 1 = enable network
+                ## 1 = registered home network
 ```
-- enable 5G operation both SA and NSA - (0 is no mode is disable)
+4. check PDP context
 ```
-AT+QNWPREFCFG+"nr5g_disable_mode",0
-```
-- specify PDP context (set Protocol to IPv4, and set APN)
-```
-AT+CGDCONT=1,"IP",<APN>
+## check PDP context
+AT+CGDCONT?
++CGDCONT: 1,"IP","internet"     ## CID = 1
 
-# if another APN is showed up, remove it
-AT+CGDCONT=<cid>
-```
-(below can skip to the next session)
+## disable other unused PDP
+AT+CGDCONT=2
+AT+CGDCONT=3
 
-<!-- ### 2.2. AT command for start using 5G <a name = "atminicom_5G"></a>
-##### from https://hackmd.io/@yeneronur/SJDIPBWns#Instructions-for-Quectel 
-- quectel information
+## activate PDP context
+AT+CGACT=1,1    ## second number is CID
+                ## return 1 = connect
 ```
-ATI
-Quectel                                                                         
-RM510Q-GL                                                                       
-Revision: RM510QGLAAR11A03M4G       
-OK
+5. check connection
 ```
-- Firmware update
-```
-AT+QMBNCFG=”Select”,”Row_commercial”
-OK
-```
+AT+COPS?
++COPS: 0,0,"Open5GS Magic",11
++COPS: 0,0,"TRUE-H TRUE-H",7 
 
-- reboot (always wait for the reboot to finish)
-```
-at+cfun=1,1
-OK
-RDY
-+CPIN: READY
-+QUSIM: 1
-+CFUN: 1
-+QIND: SMS DONE
-+QIND: PB DONE
-TATE0
-OK
-OK
-OK
-+CRSM: 148,8,""
-OK
-+CEMODE: 2
-OK
-+QGPS: (1-4),(1-255),(1-3),(100-65535)
-OK
-+CPMS: "ME",18,127,"ME",18,127,"ME",18,127
-OK
-+CTZU: (0,1)
-OK
-+CCLK: "24/01/18,08:58:19+28"
-OK
-RM510QGLAAR11A03M4G                                                             
-OK                                                                              
-RM510QGLAAR11A03M4G_01.001.01.001                                               
-OK 
-``` -->
-- activate PDP context (if it show +CME ERROR: 30 means you didn't wait for the reboot to finish,reboot again and wait for it to finish)
-```
-AT+CGACT=1,1
-+CCLK: "24/01/18,08:39:27+28"                                                     OK
-```
-- define PDP context, set it to IPv4
-```
-AT+CGDCONT: define PDP context
-AT+CGDCONT=1,"IP",<APN>,<PDP_addr>
-```
-- show PDP address (it will return address in "". If there is no address here, reboot again and wait for it to finish)
-```
-AT+CGPADDR=1                                                                    
-+CGPADDR: 1,"10.101.133.178" 
-OK  
-```
-- verify network setting `AT+CGDCONT?`
-- ping website \
+AT+QMAP="wwan0"     
++QMAP="wwan0": 1,1,"IPV4","10.45.0.2"
 
-Explanation: \
+AT+CGPADDR
++CGPADDR: 1,"10.45.0.2"
+```
+- for `AT+COPS` if it returns no network name, change setting from `5G only` to `3G, 4G, 5G` 
+6. check network strength
+```
+AT+QCSQ
++QCSQ: <RAT>,<RSRP>,<SINR>,<RSRQ>        
++QCSQ: "NR5G",-68,38,-11
+
+AT+QNEG="servingcell"
++QENG="servingcell": <CON>,<RAT>,<TDD/FDD>,<MCC>,<MNC>,xxxxxx,xx,xx,<ARFCN>,<band>,xx,<RSRP>,<RSRQ>,<SINR>,xx
++QENG="servingcell": "NOCONN","NR5G-SA","TDD",901,70,66C000,1,7,626976,78,3,-72,-11,37,1
+
+
+## add on
+
+AT+QNWCFG="nr5g_csi"
++QNWCFG="nr5g_csi": <MCS>, <RI>, <CQI>, <PMI>
+
+AT+QNWINFO?
++QNWINFO: "TDD NR5G","90170","NR5G_BAND 78",626976
+```
+(worst to best)
+- AT+QCSQ : RSRP [-140,-40], SINR [-20,40], RSRQ [-20,-3] 
+- AT+QNWCFG : MCS[0-31], CQI[0-15]
+7. (optional) shutdown
+```
+AT+QPOWD
+```
+8. (optional) ping using AT command - not recommend, mostly returns `+QPING:569`
 ```
 at+qping=1,"google.com"
 OK
@@ -623,81 +528,6 @@ Echo ping reply
 ![Screenshot from 2024-03-04 15-36-38](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/719ca952-2a9a-46be-b9cd-44d0d6376b13)
 
 
-```
-AT+QPING=1,"openairinterface.org" 
-OK            
-+QPING: 561
-
-at+qping=1,"openairinterface.org"
-OK
-+QPING: 0,"137.74.50.85",32,224,255
-+QPING: 0,"137.74.50.85",32,225,255
-+QPING: 0,"137.74.50.85",32,225,255
-+QPING: 0,"137.74.50.85",32,221,255
-+QPING: 0,4,4,0,221,225,223
-
-at+qping=1,"google.com"
-OK
-+QPING: 0,"216.58.200.14",32,49,255
-+QPING: 0,"216.58.200.14",32,42,255
-+QPING: 0,"216.58.200.14",32,58,255
-+QPING: 0,"216.58.200.14",32,44,255
-+QPING: 0,4,4,0,42,58,47
-
-at+qping=1,"8.8.8.8"                                               
-OK                                          
-+QPING: 0,"8.8.8.8",32,78,255
-+QPING: 0,"8.8.8.8",32,30,255
-+QPING: 0,"8.8.8.8",32,44,255
-+QPING: 0,"8.8.8.8",32,51,255
-+QPING: 0,4,4,0,30,78,50
-+QIURC: "pdpdeact",1
-```
-show current firmware version
-```
-at+gmr                                  
-RM510QGLAAR11A03M4G   
-```
-show IMSI and IMEI of (U)SIM
-```
-at+cimi                                 
-+CCLK: "24/01/18,08:32:36+28"           
-OK
-
-at+gsn
-867034040025018
-OK
-```
-#### the main part of start 5G mode in quectel
-unlock the quectel
-```
-at+qmbncfg="Select","Row_commercial"                                            
-OK
-```
-display 5g nr frequencuy band
-```
-at+qnwprefcfg="nr5g_band"
-+QNWPREFCFG: "nr5g_band",1:2:3:5:7:8:12:20:25:28:38:40:41:48:66:71:77:78:79
-```
-display then set operation mode to 5G NR, then enable 5G operation
-```
-at+qnwprefcfg="mode_pref",nr5g
-+CCLK: "24/01/18,08:50:24+28"
-OK
-```
-start using on 5G
-```
-at+qnwprefcfg="nr5g_disable_mode",0
-+CCLK: "24/01/18,08:50:59+28"
-OK
-```
-
-### 2.3. AT command for start using 4G only <a name = "atminicom_4G">
-```
-at+qnwprefcfg = "lte_band"
-at+qnwprefcfg = "mode_pref"
-at+qnwprefcfg = "mode_pref", LTE
-```
 ## 3. use case
 ### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
 0. config open5gs and firewall
@@ -717,47 +547,6 @@ Status: inactive
 ```
 >> cd ~/.config/srsran
 >> ifconfig
-br-2d2baf4f3a8c: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
-        inet 10.53.1.1  netmask 255.255.255.0  broadcast 10.53.1.255
-        ether 02:42:04:8a:c3:1c  txqueuelen 0  (Ethernet)
-        RX packets 0  bytes 0 (0.0 B)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 0  bytes 0 (0.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-br-36c6988d1fa9: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
-        inet 172.19.1.1  netmask 255.255.255.0  broadcast 172.19.1.255
-        ether 02:42:67:03:3d:9d  txqueuelen 0  (Ethernet)
-        RX packets 0  bytes 0 (0.0 B)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 0  bytes 0 (0.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
-        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
-        ether 02:42:15:f6:a6:8a  txqueuelen 0  (Ethernet)
-        RX packets 0  bytes 0 (0.0 B)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 0  bytes 0 (0.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-enp0s31f6: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
-        ether 38:f3:ab:48:87:a1  txqueuelen 1000  (Ethernet)
-        RX packets 0  bytes 0 (0.0 B)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 0  bytes 0 (0.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-        device interrupt 16  memory 0xae500000-ae520000  
-
-lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
-        inet 127.0.0.1  netmask 255.0.0.0
-        inet6 ::1  prefixlen 128  scopeid 0x10<host>
-        loop  txqueuelen 1000  (Local Loopback)
-        RX packets 220551  bytes 34295767 (34.2 MB)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 220551  bytes 34295767 (34.2 MB)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
 ogstun: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1400
         inet 10.45.0.1  netmask 255.255.0.0  destination 10.45.0.1
         inet6 2001:db8:cafe::1  prefixlen 48  scopeid 0x0<global>
@@ -766,15 +555,6 @@ ogstun: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1400
         RX packets 0  bytes 0 (0.0 B)
         RX errors 0  dropped 0  overruns 0  frame 0
         TX packets 96  bytes 26868 (26.8 KB)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-srs_spgw_sgi: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500
-        inet 172.16.0.1  netmask 255.255.255.0  destination 172.16.0.1
-        inet6 fe80::b78c:6490:dc3:d779  prefixlen 64  scopeid 0x20<link>
-        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)
-        RX packets 6344  bytes 965830 (965.8 KB)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 12626  bytes 11671286 (11.6 MB)
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
 wlp9s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
@@ -794,9 +574,7 @@ default         _gateway        0.0.0.0         UG    600    0        0 wlp9s0
 10.53.1.0       0.0.0.0         255.255.255.0   U     0      0        0 br-2d2baf4f3a8c
 10.221.40.0     0.0.0.0         255.255.248.0   U     600    0        0 wlp9s0
 link-local      0.0.0.0         255.255.0.0     U     1000   0        0 wlp9s0
-172.16.0.0      0.0.0.0         255.255.255.0   U     0      0        0 srs_spgw_sgi
-172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-172.19.1.0      0.0.0.0         255.255.255.0   U     0      0        0 br-36c6988d1fa9
+
 
 >> sudo srsepc_if_masq.sh wlp9s0
 >> ifconfig
@@ -823,29 +601,24 @@ sudo srsenb enb.conf
 4. start connect quectel to the masq
 4.1. method on discussion forum
 ```
->> sudo mmcli -L
-    /org/freedesktop/ModemManager1/Modem/22 [Quectel] RM510Q-GL
-
->> sudo mmcli -m 22
-
->> sudo mmcli -m 22 -e
-successfully enabled the modem
-
->> sudo mmcli -m 22 --simple-connect="apn=srsapn"
+sudo mmcli -L
+sudo mmcli -m 2
+sudo mmcli -m 2 -e
+sudo mmcli -m 2 --simple-connect="apn=srsapn"
 ```
 4.2 method from this document
 ```
->> lsusb
->> sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
->> sudo ip link set wwan0 down
->> echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
->> sudo ip link set wwan0 up
+lsusb
+sudo qmicli --device=/dev/cdc-wdm0 --dms-get-operating-mode 
+sudo ip link set wwan0 down
+echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
+sudo ip link set wwan0 up
 
->> sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
+sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
 
->> sudo udhcpc -q -f -i wwan0
->> ifconfig 
->> ping -I wwan0 -c 5 8.8.8.8
+sudo udhcpc -q -f -i wwan0
+ifconfig 
+ping -I wwan0 -c 5 8.8.8.8
 ```
 5. click connect on the network setting
 5.1. on laptop in Ubuntu OS
@@ -862,181 +635,9 @@ at+cops?
 +COPS: 0,0,"Software Radio Systems R",7
 
 at+qnwprefcfg = "lte_band"
-at+qnwprefcfg = "mode_pref"
 at+qnwprefcfg = "mode_pref", LTE
 AT+QPING=1,"8.8.8.8"      
 ```
-
-<details close>
-<summary> log </summary>
-
-log epc
-```
-sudo srsepc epc.conf 
-
-Built in Release mode using commit eea87b1d8 on branch master.
-
-
----  Software Radio Systems EPC  ---
-
-Reading configuration file epc.conf...
-HSS Initialized.
-MME S11 Initialized
-MME GTP-C Initialized
-MME Initialized. MCC: 0xf999, MNC: 0xff70
-SPGW GTP-U Initialized.
-SPGW S11 Initialized.
-SP-GW Initialized.
-Received S1 Setup Request.
-S1 Setup Request - eNB Name: srsenb01, eNB id: 0x19b
-S1 Setup Request - MCC:999, MNC:70
-S1 Setup Request - TAC 7, B-PLMN 0x99f907
-S1 Setup Request - Paging DRX v128
-Sending S1 Setup Response
-Initial UE message: LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST
-Received Initial UE message -- Attach Request
-Attach request -- IMSI: 999700000062713
-Attach request -- eNB-UE S1AP Id: 1
-Attach request -- Attach type: 2
-Attach Request -- UE Network Capabilities EEA: 11110000
-Attach Request -- UE Network Capabilities EIA: 01110000
-Attach Request -- MS Network Capabilities Present: false
-PDN Connectivity Request -- EPS Bearer Identity requested: 0
-PDN Connectivity Request -- Procedure Transaction Id: 1
-PDN Connectivity Request -- ESM Information Transfer requested: false
-Downlink NAS: Sending Authentication Request
-UL NAS: Received Authentication Response
-Authentication Response -- IMSI 999700000062713
-UE Authentication Accepted.
-Generating KeNB with UL NAS COUNT: 0
-Downlink NAS: Sending NAS Security Mode Command.
-UL NAS: Received Security Mode Complete
-Security Mode Command Complete -- IMSI: 999700000062713
-Getting subscription information -- QCI 9
-Sending Create Session Request.
-Creating Session Response -- IMSI: 999700000062713
-Creating Session Response -- MME control TEID: 1
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_CREATE_SESSION_REQUEST
-SPGW: Allocated Ctrl TEID 1
-SPGW: Allocated User TEID 1
-SPGW: Allocate UE IP 172.16.0.2
-Received Create Session Response
-Create Session Response -- SPGW control TEID 1
-Create Session Response -- SPGW S1-U Address: 127.0.1.100
-SPGW Allocated IP 172.16.0.2 to IMSI 999700000062713
-Adding attach accept to Initial Context Setup Request
-Sent Initial Context Setup Request. E-RAB id 5 
-Received Initial Context Setup Response
-E-RAB Context Setup. E-RAB id 5
-E-RAB Context -- eNB TEID 0x1; eNB GTP-U Address 127.0.1.1
-UL NAS: Received Attach Complete
-Unpacked Attached Complete Message. IMSI 999700000062713
-Unpacked Activate Default EPS Bearer message. EPS Bearer id 5
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
-Sending EMM Information
-Received UE Context Release Request. MME-UE S1AP Id 1
-There are active E-RABs, send release access bearers request
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_RELEASE_ACCESS_BEARERS_REQUEST
-Received UE Context Release Complete. MME-UE S1AP Id 1
-UE Context Release Completed.
-Initial UE message: NAS Message Type Unknown
-Received Initial UE message -- Service Request
-Service request -- S-TMSI 0xb847c193
-Service request -- eNB UE S1AP Id 2
-Service Request -- Short MAC valid
-Service Request -- User is ECM DISCONNECTED
-UE previously assigned IP: 172.16.0.2
-Generating KeNB with UL NAS COUNT: 2
-UE Ctr TEID 0
-Sent Initial Context Setup Request. E-RAB id 5 
-Found UE for Downlink Notification 
-MME Ctr TEID 0x1, IMSI: 999700000062713
-Received Initial Context Setup Response
-E-RAB Context Setup. E-RAB id 5
-E-RAB Context -- eNB TEID 0x2; eNB GTP-U Address 127.0.1.1
-Initial Context Setup Response triggered from Service Request.
-Sending Modify Bearer Request.
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_MODIFY_BEARER_REQUEST
-Modify Bearer Request received after Downling Data Notification was sent
-T3413 expired -- Could not page the ue.
-Received GTP-C PDU. Message type: GTPC_MSG_TYPE_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION
-```
-
-log enb
-```
-sudo srsenb enb.conf 
-[sudo] password for chatchamon: 
-Active RF plugins: libsrsran_rf_blade.so libsrsran_rf_zmq.so
-Inactive RF plugins: 
----  Software Radio Systems LTE eNodeB  ---
-
-Reading configuration file enb.conf...
-WARNING: cpu0 scaling governor is not set to performance mode. Realtime processing could be compromised. Consider setting it to performance mode before running the application.
-
-Built in Release mode using commit eea87b1d8 on branch master.
-
-Opening 2 channels in RF device=bladeRF with args=default
-Supported RF device list: bladeRF zmq file
-Opening bladeRF...
-Set RX sampling rate 1.92 Mhz, filter BW: 1.92 Mhz
-
-==== eNodeB started ===
-Type <t> to view trace
-Set RX sampling rate 3.84 Mhz, filter BW: 3.07 Mhz
-Setting manual TX/RX offset to 27 samples
-Setting frequency: DL=1842.5 Mhz, UL=1747.5 MHz for cc_idx=0 nof_prb=15
-set TX frequency to 1842500000
-set TX frequency to 1842500000
-set RX frequency to 1747500000
-set RX frequency to 1747500000
-RF status: O=1, U=0, L=0
-RACH:  tti=3351, cc=0, pci=1, preamble=29, offset=25, temp_crnti=0x47
-User 0x47 connected
-               -----------------DL----------------|-------------------------UL-------------------------
-rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
-lte    1   47   15   1   11   233k   45    1   2% |  25.1   26.5   34   21   248k   46    0   0%    0.0
-lte    1   47   14   1    1     72    1    0   0% |  25.1   27.8   34   21    20k    5    0   0%    0.0
-lte    1   47   13   1    1    144    2    0   0% |  23.6   29.8   30   21    24k    6    0   0%    0.0
-lte    1   47   13   1    1     72    1    0   0% |  23.5   29.4   31   22   4.1k    1    0   0%    0.0
-lte    1   47   13   1    9    17k   16    0   0% |  24.1   29.3   31   21   105k   32    4  11%    0.0
-lte    1   47   14   1    9    63k   24    0   0% |  25.0   28.1   31   21   130k   31    0   0%    0.0
-lte    1   47   15   1    1    216    3    0   0% |  25.0   26.8   33   22    48k    9    0   0%    0.0
-lte    1   47   15   1   11    16k    8    0   0% |  25.0   26.2   34   21    41k    9    0   0%    0.0
-lte    1   47   13   1    1    288    4    0   0% |  21.4   27.3   31   20    82k   20    0   0%    0.0
-
-               -----------------DL----------------|-------------------------UL-------------------------
-rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
-lte    1   47   15   1    8   2.1k    4    0   0% |  19.0   24.7   37   19    13k    3    0   0%    0.0
-lte    1   47   15   1    7   2.6k    6    0   0% |  20.1   24.5   37   17    21k    5    0   0%    0.0
-lte    1   47   15   1    8   2.0k    4    0   0% |  20.5   25.0   37   20    13k    3    0   0%    0.0
-lte    1   47   15   1    9   2.0k    4    0   0% |  20.6   25.0   37   19    13k    3    0   0%    0.0
-lte    1   47   15   1    2    952    3    0   0% |  21.3   25.0   37   20    13k    3    0   0%    0.0
-lte    1   47   15   1   11   3.2k    5    0   0% |  20.8   24.7   38   22    12k    3    0   0%    0.0
-lte    1   47   15   1    9   2.1k    4    0   0% |  20.0   23.9   37   19    13k    3    0   0%    0.0
-lte    1   47   15   1    8   2.0k    4    0   0% |  20.2   24.8   37   18    13k    3    0   0%    0.0
-lte    1   47   15   1    7    920    3    0   0% |  20.1   24.5   37   19    13k    3    0   0%    0.0
-lte    1   47   15   1    8   3.2k    5    0   0% |  19.6   24.2   37   18    13k    3    0   0%    0.0
-lte    1   47   15   1    9   2.0k    4    0   0% |  19.0   23.7   38   18    13k    3    0   0%    0.0
-```
-
-- trace on unsuccessful ping (ping request, only retransmission)
-```
-               -----------------DL----------------|-------------------------UL-------------------------
-rat  pci rnti  cqi  ri  mcs  brate   ok  nok  (%) | pusch  pucch  phr  mcs  brate   ok  nok  (%)    bsr
-lte    1   4c   12   1    1    144    2    0   0% |  28.0   34.8   40   22   8.3k    2    0   0%    0.0
-lte    1   4c   12   1    1     72    1    0   0% |  27.5   35.1   40   22   4.1k    1    0   0%    0.0
-lte    1   4c   13   1    1    144    2    0   0% |  27.5   35.2   40   22   8.3k    2    0   0%    0.0
-lte    1   4c   13   1    1     72    1    0   0% |  26.1   34.5   40   22   4.1k    1    0   0%    0.0
-lte    1   4c   13   1    1     72    1    0   0% |  26.3   35.0   40   22   4.1k    1    0   0%    0.0
-lte    1   4c   13   1    1    144    2    0   0% |  26.4   34.2   40   22   8.3k    2    0   0%    0.0
-lte    1   4c   13   1    1    144    2    0   0% |  25.9   34.5   40   22   8.3k    2    0   0%    0.0
-lte    1   4c   13   1    1    144    2    0   0% |  27.2   34.8   40   22   8.3k    2    0   0%    0.0
-lte    1   4c   14   1    1    144    2    0   0% |  26.4   35.2   40   22   8.3k    2    0   0%    0.0
-lte    1   4c   14   1    1     72    1    0   0% |  27.5   35.0   40   22   4.1k    1    0   0%    0.0
-lte    1   4c   14   1    1     72    1    0   0% |  25.1   34.6   40   22   4.1k    1    0   0%    0.0
-```
-</details>
-
 
 ### 3.2. quectel to enable computator to connect to 5G and iperf to UNAI
 ```
