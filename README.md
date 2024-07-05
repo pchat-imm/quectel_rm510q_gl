@@ -7,9 +7,8 @@
 - [successful test case](#successful-test-case)
 - [0. setup Antenna](#0-setup-antenna)
 - [1. setup data connection](#1-setup-data-connection)
-  * [1.1. setting up a data connection over QMI interface using libqmi](#11-setting-up-a-data-connection-over-qmi-interface-using-libqmi-)
-  * [1.2. setting up a data connection use mmcli](#12-setting-up-a-data-connection-use-mmcli-)
-      - [from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829](#from-httpsgithubcomsrsransrsran_projectdiscussions426%23discussioncomment-8233829)
+  * [1.1. setting up a data connection over QMI interface using libqmi](#11-setting-up-a-data-connection-over-qmi-interface-using-libqmi)
+  * [1.2. setting up a data connection use mmcli](#12-setting-up-a-data-connection-use-mmcli)
 - [2. AT command](#2-at-command)
   * [2.1. start minicom](#21-start-minicom-)
   * [2.2 AT command basic](#22-at-command-basic)
@@ -20,7 +19,7 @@
 
 <!-- tocstop -->
 
-## successful test case
+### successful test case
 - quectel + sim true 5G to internet
 	- to ping
 	- to iperf (on 5G to UNAI)
@@ -31,30 +30,29 @@
     - ping
     - connect to web server, run speedtest
 
-## 0. setup Antenna
+### 0. setup Antenna
 - connect to ANT0 and ANT1 (see more on hardware design)
 - in case want to enhance recieve signal quality, connect ANT2 and ANT3
 
-## 1. setup data connection
-### 1.1. setting up a data connection over QMI interface using libqmi <a name = "setupqmi"></a>
+### 1. setup data connection
+#### 1.1. setting up a data connection over QMI interface using libqmi 
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
 - check basic qmi command: https://techship.com/faq/how-to-step-by-step-set-up-a-data-connection-over-qmi-interface-using-qmicli-and-in-kernel-driver-qmi-wwan-in-linux/
 - other: https://solidrun.atlassian.net/wiki/spaces/developer/pages/326631427/Setting+up+a+data+connection+over+QMI+interface+using+libqmi
 
-- check the compatability of the module with 
+- check the compatability of the module  
 ```
->> lsusb
-
+lsusb
 Bus 003 Device 012: ID 2c7c:0800 Quectel Wireless Solutions Co., Ltd. RM510Q-GL
 
->> lsusb -t
+lsusb -t
  |__ Port 1: Dev 12, If 4, Class=Vendor Specific Class, Driver=qmi_wwan, 480
 ```
 
 - install required packages
 ```
->> sudo apt update
->> sudo apt update && sudo apt install libqmi-utils udhcpc
+sudo apt update
+sudo apt update && sudo apt install libqmi-utils udhcpc
 ```
 
 - get operating mode
@@ -75,49 +73,26 @@ sudo qmicli --device=/dev/cdc-wdm0 --dms-set-operating-mode='online'
 <summary><b> other basic command to check the quectel board with qmicli command </b></summary>
 	
 ```
->> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --uim-get-card-status
-[/dev/cdc-wdm0] Successfully got card status
-Provisioning applications:
-	Primary GW:   slot '1', application '1'
-	Primary 1X:   session doesn't exist
-	Secondary GW: session doesn't exist
-	Secondary 1X: session doesn't exist
-Slot [1]:
-	Card state: 'present'
-	UPIN state: 'not-initialized'
-		UPIN retries: '0'
-		UPUK retries: '0'
-	Application [1]:
-		Application type:  'usim (2)'
-		Application state: 'ready'
-		Application ID:
-			A0:00:00:00:87:10:02:FF:66:FF:FF:89:FF:FF:FF
-		Personalization state: 'ready'
-		UPIN replaces PIN1: 'no'
-		PIN1 state: 'disabled'
-			PIN1 retries: '3'
-			PUK1 retries: '10'
-		PIN2 state: 'enabled-not-verified'
-			PIN2 retries: '3'
-			PUK2 retries: '10'
-```
-```
->> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --dms-get-ids
-[/dev/cdc-wdm0] Device IDs retrieved:
-	ESN: '0'
-	IMEI: '867034040025018'
-	MEID: 'unknown'
-	IMEI SV: '27'
-```
-```
->> sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --dms-get-revision
+## get revision of quectel board
+sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --dms-get-revision
+
 [/dev/cdc-wdm0] Device revision retrieved:
-	Revision: 'RM510QGLAAR11A03M4G'
+    Revision: 'RM510QGLAAR11A03M4G'
+
+
+## get id
+sudo qmicli --device=/dev/cdc-wdm0 --device-open-proxy --dms-get-ids
+
+[/dev/cdc-wdm0] Device IDs retrieved:
+    ESN: '0'
+    IMEI: '867034040025018'
+    MEID: 'unknown'
+    IMEI SV: '27'
 ```
 </details>
 
 
-- configure the network interface
+- configure the network interface 
 ```
 ## down the interface
 sudo ip link set wwan0 down
@@ -128,33 +103,36 @@ echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip
 ## restart the interface
 sudo ip link set wwan0 up
 ```
-- when the wwan0 is up, connect the network by changing `apn, username, password`
+- when the wwan0 is up, connect to the network by changing `apn, username, password`
 ```
->> sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='Your_APN',username='Your_Username',password='Your_Password'" --client-no-release-cid
+## connect to the network
+sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='Your_APN',username='Your_Username',password='Your_Password'" --client-no-release-cid
+```
+example of configuration
+```
+## for client sim card
+sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='internet',username='true',password='true'" --client-no-release-cid
 
 [/dev/cdc-wdm0] Network started
-	Packet data handle: '3059871808'
+    Packet data handle: '3059871808'
 [/dev/cdc-wdm0] Client ID not released:
-	Service: 'wds'
-	    CID: '23'
-```
-my client sim card setup
-```
-sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='internet',username='true',password='true'" --client-no-release-cid
-```
-sysmocom sim card
-```
+    Service: 'wds'
+        CID: '23'
+
+
+## for sysmocom sim card
 sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='srsapn'" --client-no-release-cid 
+
 error: couldn't start network: QMI protocol error (14): 'CallFailed'
 call end reason (3): generic-no-service
 verbose call end reason (3,2001): [cm] no-service
 [/dev/cdc-wdm0] Client ID not released:
-	Service: 'wds'
-	    CID: '16'
+    Service: 'wds'
+        CID: '16'
 ```
 if the network timeout, it could be that you skip the state of `sudo ip link set wwan0 down` to `sudo ip link set wwan0 up`. Try again. But sometimes it is not this. 
 
-- then configure the IP address and the default route with udhcpc
+- use `udhcpc` to configure the IP address and the default route
 ```
 sudo udhcpc -q -f -i wwan0
 	udhcpc: started, v1.30.1
@@ -162,7 +140,7 @@ sudo udhcpc -q -f -i wwan0
 	udhcpc: sending select for 10.38.223.119
 	udhcpc: lease of 10.38.223.119 obtained, lease time 7200
 ```
-- check the assigned IP address
+- use `ifconfig` to check the assigned IP address
 ```
 >> ifconfig wwan0
 wwan0: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500
@@ -174,8 +152,7 @@ wwan0: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500
         TX packets 903  bytes 70464 (70.4 KB)
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ```
-
-- check the network connection
+- use `ping` to check the network connection
 ```
 >> ping -I wwan0 -c 5 8.8.8.8
 PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
@@ -190,18 +167,11 @@ PING 8.8.8.8 (8.8.8.8) from 10.38.223.119 wwan0: 56(84) bytes of data.
 rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
-<details close>
-<summary><i> sysmocom sim </i></summary>
-	
-|IMSI	|ICCID	|ACC	|PIN1	|PUK1	|PIN2	|PUK2	|Ki	|OPC	|ADM1	|KIC1	|KID1	|KIK1	|KIC2	|KID2	|KIK2	|KIC3	|KID3	|KIK3
-| ---  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|999700000062713	|8988211000000627136	|0008	|2481	|43215893	|5679	|21192366	|96E5235D7BD18E48BEF1B85521383C4E	|B1C0A05123C419D615B71EC0F8CE13AB	|73947583	|BAEFEE018E08B0DE276DCF03900BE2AF	|B2037C9475B7C9A2D8637F8B9651B835	|AED8AB5736726DB4BF6CF1FE44E61BF6	|EF00A3344612955BC3144E4DF8C719D4	|A42E9EBDFB3768C98AFEED6154E375F7	|240A034AE19677D51B1CB19DD5F63503	|6AC9B3640FD1FD90D50B43004C72C0A4	|EEA71035E53F67E7266E2C954212E6BC	|55CADF364D70E23D7ADFA510902ABFC2|
-</details>
+#### 1.2. setting up a data connection use mmcli 
+- from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829
+- **note: for using the UE first time, it is not recommend to connect using `mmcli`, `qmicli` will be better** <br />
 
-### 1.2. setting up a data connection use mmcli <a name = "setupmmcli"></a>
-##### from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829
-note: for using the UE first time, it is not recommend to connect using `mmcli`, `qmicli` will be better
-- connect the modem
+connect to the modem
 ```
 ## list connected modem
 sudo mmcli -L
@@ -318,46 +288,39 @@ sudo mmcli -m 22
 ```
 </details>
 
-## 2. AT command
-### 2.1. start minicom <a name = "atminicom_basic"></a>
-```
->> sudo dmesg | grep /dev/ttyUSB
->> sudo dmesg | grep ttyUSB
-```
-it should show USB0,1,2,3. From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, it said 
-> - /dev/ttyUSB0 - DM 
-> - /dev/ttyUSB1 - For GPS NMEA message output 
-> - /dev/ttyUSB2 - For AT command communication 
-> - /dev/ttyUSB3 - For PPP connection or AT command communication 
+### 2. AT command
+#### 2.1. start minicom <a name = "atminicom_basic"></a>
 
-Therefore, we are going to use /dev/ttyUSB2 for AT command
+- check USB interface
+```
+sudo dmesg | grep /dev/ttyUSB
+sudo dmesg | grep ttyUSB
+```
+From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, indicate we will use `ttyUSB2` for `AT command`
+> /dev/ttyUSB0 - DM 
+> /dev/ttyUSB1 - For GPS NMEA message output 
+> /dev/ttyUSB2 - For AT command communication 
+> /dev/ttyUSB3 - For PPP connection or AT command communication 
 
-- setting serial port
+- enter `minicom`
 ```
 sudo minicom -s
 ```
-we are setting serial port </br>
-<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="30%" height="30%"/> <br/>
-make sure </br>
-> - serial device = /dev/ttyUSB2 \
-> - bps = 115200 (default) \
-> - Hardware flow control = No \
-
+- setting serial port
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="30%" height="30%" align="left">
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a289b780-4135-44cd-a02e-da1e2a03187a" width=50% height=50%/> <br/>
+make sure </br>
+> serial device = /dev/ttyUSB2 \
+> bps = 115200 (default) \
+> Hardware flow control = No \
 everytime finish `Save setup as dfl` before `exit`
 
-- using ctrl A + E = echo ON, to show what you type on the screen
-- usign ctrl A + C = clear screen
-- using ctrl A + X to quit the minicom
-- if minicom freeze, open another window and try
-
-### 2.2 AT command basic 
-
+#### 2.2 AT command basic 
 from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
   
-also don't forget to connect with broadband \
+don't forget to connect with broadband \
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a288c95d-3c49-4146-b53c-3e8528cbc1b3" width="70%" height="70%"/> <br/>
 
 basic minicom menu
@@ -530,8 +493,8 @@ Echo ping reply
 ![Screenshot from 2024-03-04 15-36-38](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/719ca952-2a9a-46be-b9cd-44d0d6376b13)
 
 
-## 3. use case
-### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
+### 3. use case
+#### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
 0. config open5gs and firewall
 ```
 ### Enable IPv4/IPv6 Forwarding
@@ -623,10 +586,16 @@ ifconfig
 ping -I wwan0 -c 5 8.8.8.8
 ```
 5. click connect on the network setting
+
 5.1. on laptop in Ubuntu OS
+<img src="https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3"  align="left" width="30%" height="auto">
+<br />
+
+<!--
 ![Screenshot from 2024-03-15 14-20-37](https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3)
 5.2. on RPI 3
 ![unnamed](https://github.com/pchat-imm/srsRAN/assets/40858099/c4d64b51-ad38-4f55-8768-18c9bf197c0f)
+-->
 
 6. run AT command to ping to the gNB
 ```
@@ -641,7 +610,7 @@ at+qnwprefcfg = "mode_pref", LTE
 AT+QPING=1,"8.8.8.8"      
 ```
 
-### 3.2. quectel to enable computator to connect to 5G and iperf to UNAI
+#### 3.2. quectel to enable computator to connect to 5G and iperf to UNAI
 ```
 >> iperf3 -c <IP> -p 9051 -b 10M
 Connecting to host <IP>, port 9051
@@ -663,7 +632,7 @@ Connecting to host <IP>, port 9051
 [  5]   0.00-10.07  sec  5.43 MBytes  4.53 Mbits/sec                  receiver
 ```
 
-### 3.3. quectel to enable computator to connect to 4G and iperf to UNAI
+#### 3.3. quectel to enable computator to connect to 4G and iperf to UNAI
 ```
 chatchamon@worker01:~$ iperf3 -c 203.185.137.212 -p 9051 -b 10M
 Connecting to host 203.185.137.212, port 9051
