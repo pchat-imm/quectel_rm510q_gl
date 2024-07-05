@@ -44,10 +44,12 @@
 
 ### 1. setup data connection
 #### 1.1. setting up a data connection over QMI interface using libqmi 
+source:
 - mainly from: https://docs.sixfab.com/page/setting-up-a-data-connection-over-qmi-interface-using-libqmi
 - check basic qmi command: https://techship.com/faq/how-to-step-by-step-set-up-a-data-connection-over-qmi-interface-using-qmicli-and-in-kernel-driver-qmi-wwan-in-linux/
 - other: https://solidrun.atlassian.net/wiki/spaces/developer/pages/326631427/Setting+up+a+data+connection+over+QMI+interface+using+libqmi
 
+##### steps:
 - check the compatability of the module  
 ```
 lsusb
@@ -176,9 +178,11 @@ rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
 #### 1.2. setting up a data connection use mmcli 
-from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829 <br>
+source:
+- from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829 <br>
 **note: for using the UE first time, it is not recommend to connect using `mmcli`, `qmicli` will be better** <br />
 
+##### steps:
 - connect to the modem
 ```
 ## list connected modem
@@ -299,6 +303,7 @@ sudo mmcli -m 22
 ### 2. AT command
 #### 2.1. start minicom <a name = "atminicom_basic"></a>
 
+##### steps:
 - check USB interface
 ```
 sudo dmesg | grep /dev/ttyUSB
@@ -319,27 +324,31 @@ sudo minicom -s
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a289b780-4135-44cd-a02e-da1e2a03187a" width=50% height=50%/> <br/>
 
 make sure </br>
-- serial device = /dev/ttyUSB2 \
-- bps = 115200 (default) \
+- serial device = /dev/ttyUSB2 
+- bps = 115200 (default) 
 - Hardware flow control = No
   
 everytime finish `Save setup as dfl` before `exit`
 
 #### 2.2 AT command basic 
-from
+source: 
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
-  
-##### - don't forget to connect with broadband 
+
+
+##### steps:
+- don't forget to connect with broadband <br>
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a288c95d-3c49-4146-b53c-3e8528cbc1b3" width="70%" height="70%"/> <br/>
 
 basic `minicom` menu
-- using ctrl A + E = echo ON, to show what you type on the screen
-- usign ctrl A + C = clear screen
-- using ctrl A + X to quit the minicom
-- if minicom freeze, open another window and try
+> - using ctrl A + E = echo ON, to show what you type on the screen
+> - usign ctrl A + C = clear screen
+> - using ctrl A + X to quit the minicom
+> - if minicom freeze, open another window and try
+<br>
 
-##### - check connection, enable module, and reboot
+- check connection, enable module, and reboot
+  
 ```
 ## check if AT command on
 AT
@@ -394,14 +403,14 @@ OK
 ```
 </details>
 
-##### - set module as 5G
+- set module as 5G
 ```
 AT+QNWPREFCFG="nr5g_band"
 AT+QNWPREFCFG="mode_pref",NR5G
 AT+QNWPREFCFG="nr5g_disable_mode",0   ## enable 5G operation both SA and NSA - (0 is no mode is disable)
 AT+QNWPREFCFG="roam_pref",1-255       ## 255 = Roaming
 ```
-##### - check registration status
+- check registration status
 ```
 AT+CREG=?        
 +CREG:1,0       ## 1 = registered home network
@@ -409,7 +418,7 @@ AT+CREG=?
 AT+C5GREG?      ## 0 = disable / 1 = enable network
                 ## 1 = registered home network
 ```
-##### - check PDP context
+- check PDP context
 ```
 ## check PDP context
 AT+CGDCONT?
@@ -423,7 +432,7 @@ AT+CGDCONT=3
 AT+CGACT=1,1    ## second number is CID
                 ## return 1 = connect
 ```
-##### - check connection
+- check connection
 ```
 AT+COPS?
 +COPS: 0,0,"Open5GS Magic",11
@@ -435,8 +444,8 @@ AT+QMAP="wwan0"
 AT+CGPADDR
 +CGPADDR: 1,"10.45.0.2"
 ```
-- for `AT+COPS` if it returns no network name, change setting from `5G only` to `3G, 4G, 5G` 
-##### - check network strength
+for `AT+COPS` if it returns no network name, change setting from `5G only` to `3G, 4G, 5G` 
+- check network strength
 ```
 AT+QCSQ
 +QCSQ: <RAT>,<RSRP>,<SINR>,<RSRQ>        
@@ -458,11 +467,14 @@ AT+QNWINFO?
 (worst to best)
 - AT+QCSQ : RSRP [-140,-40], SINR [-20,40], RSRQ [-20,-3] 
 - AT+QNWCFG : MCS[0-31], CQI[0-15]
-##### - (optional) shutdown
+<br>
+
+- (optional) shutdown
 ```
 AT+QPOWD
 ```
-##### - (optional) ping using AT command - not recommend, mostly returns `+QPING:569`
+
+- (optional) ping using AT command - not recommend, mostly returns `+QPING:569`
 ```
 at+qping=1,"google.com"
 OK
@@ -481,27 +493,27 @@ OK
 +QPING: 0,"45.60.126.77",32,41,255
 +QPING: 0,4,4,0,25,70,45
 ```
-| 0 (successful), not 0 (error code)| IP Address | length ping request (byte) | RTT(ms) | TTL |
-| --- | --- | --- | --- | --- |
-| 0/561 | "8.8.8.8" | 32 | 224 | 255 |
+table 1: explanation from any line of `AT+QPING`
+| line | status | dest IP              | length (bytes)      | RTT (ms)  | TTL          |       
+|------|--------|----------------------|---------------------|-----------|--------------|        
+| any  | 0      | "45.60.126.77"       | 32                  | 70        | 255          | 
 
-0 is successful, other are error
+table 2: explanation from the last line of `AT+QPING`
+| line | status | total requested ping | total received ping | lost ping | min RTT (ms) | max RTT (ms) | avg RTT (ms) |
+|------|--------|----------------------|---------------------|-----------|--------------|--------------|--------------|
+| last | 0      | 4                    | 4                   | 0         | 25           | 70           | 45           |
 
-| finresult | total sending ping qrequest | total ping requests that are received | lost - number of ping requests that are timeout | min RTT (ms) | max RTT (ms) | avg RTT (ms) |
-| --- | --- | --- | --- | --- | --- | --- |
-| 0 | 4 | 4 | 0 | 42 | 59 | 47 |
+note:
+- status 0 = successful, 569 = timeout
+- the `569` could happend to any network that not working fast enough (both 4G and 5G) 
 
-in wireshark (ICMPV6) it could show list below, But importantly, you need `Echo ping request` and `Echo ping reply` to ensure that the ping is sent successfully
+the command `AT+QPING` in wireshark (ICMPV6) could show the list below, whihc you need `Echo ping request` and `Echo ping reply` to ensure that the ping is sent successfully. Other commands include:
 - Neighbour solicitaiton
 - Neighbour Advertisement
 - Echo (ping) request
 - Echo (ping) reply
-But sometimes wireshark might not catch anything (crying~)
 
-with wireshark
-Echo ping reply
-![Screenshot from 2024-03-04 15-36-38](https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/719ca952-2a9a-46be-b9cd-44d0d6376b13)
-
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/719ca952-2a9a-46be-b9cd-44d0d6376b13" width="80%" height="auto">
 
 ### 3. use case
 #### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
@@ -573,7 +585,7 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 cd ~/.config/srsran
 sudo srsenb enb.conf
 ```
-4. start connect quectel to the masq
+4. start connect quectel to the masq <br>
 4.1. method on discussion forum
 ```
 sudo mmcli -L
@@ -595,17 +607,9 @@ sudo udhcpc -q -f -i wwan0
 ifconfig 
 ping -I wwan0 -c 5 8.8.8.8
 ```
-5. click connect on the network setting
-
-5.1. on laptop in Ubuntu OS
-<img src="https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3"  align="left" width="30%" height="auto">
-<br />
-
-<!--
-![Screenshot from 2024-03-15 14-20-37](https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3)
-5.2. on RPI 3
-![unnamed](https://github.com/pchat-imm/srsRAN/assets/40858099/c4d64b51-ad38-4f55-8768-18c9bf197c0f)
--->
+5. click connect on the network setting <br>
+5.1. on laptop in Ubuntu OS 
+<img src="https://github.com/pchat-imm/o-ran-e2-kpm/assets/40858099/3fe17e17-cf33-4044-8f7e-ee40bbda1ff3" width="30%" height="auto">
 
 6. run AT command to ping to the gNB
 ```
@@ -663,7 +667,3 @@ Connecting to host 203.185.137.212, port 9051
 [  5]   0.00-10.00  sec  7.87 MBytes  6.61 Mbits/sec   52             sender
 [  5]   0.00-10.04  sec  7.68 MBytes  6.42 Mbits/sec                  receiver
 ```
-note: 
-- interface wwan0
-- 4G is slower than 5G, not successful in qping AT command, mostly receive error QPING: 569
-- if wwan0 is not presented -> `sudo ip link set wwan0 up`
