@@ -8,18 +8,14 @@
 - [0. setup Antenna](#0-setup-antenna)
 - [1. setup data connection](#1-setup-data-connection)
   * [1.1. setting up a data connection over QMI interface using libqmi](#11-setting-up-a-data-connection-over-qmi-interface-using-libqmi)
+    + [steps:](#steps)
   * [1.2. setting up a data connection use mmcli](#12-setting-up-a-data-connection-use-mmcli)
+    + [steps:](#steps-1)
 - [2. AT command](#2-at-command)
   * [2.1. start minicom](#21-start-minicom-)
+    + [steps:](#steps-2)
   * [2.2 AT command basic](#22-at-command-basic)
-    + [- don't forget to connect with broadband](#--dont-forget-to-connect-with-broadband)
-    + [- check connection, enable module, and reboot](#--check-connection-enable-module-and-reboot)
-    + [- set module as 5G](#--set-module-as-5g)
-    + [- check registration status](#--check-registration-status)
-    + [- check PDP context](#--check-pdp-context)
-    + [- check connection](#--check-connection)
-    + [- check network strength](#--check-network-strength)
-    + [8. (optional) shutdown](#8-optional-shutdown)
+    + [steps:](#steps-3)
 - [3. use case](#3-use-case)
   * [3.1. quectel as a UE for srsRAN4G](#31-quectel-as-a-ue-for-srsran4g-)
   * [3.2. quectel to enable computator to connect to 5G and iperf to UNAI](#32-quectel-to-enable-computator-to-connect-to-5g-and-iperf-to-unai)
@@ -296,7 +292,6 @@ sudo mmcli -m 22
   SIM      |        primary sim path: /org/freedesktop/ModemManager1/SIM/13
            |          sim slot paths: slot 1: /org/freedesktop/ModemManager1/SIM/13 (active)
            |                          slot 2: none
-
 ```
 </details>
 
@@ -513,7 +508,6 @@ the command `AT+QPING` in wireshark (ICMPV6) could show the list below, whihc yo
 - Echo (ping) request
 - Echo (ping) reply
 
-<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/719ca952-2a9a-46be-b9cd-44d0d6376b13" width="80%" height="auto">
 
 ### 3. use case
 #### 3.1. quectel as a UE for srsRAN4G <a name = "quectel_srsRAN4G">
