@@ -12,6 +12,14 @@
 - [2. AT command](#2-at-command)
   * [2.1. start minicom](#21-start-minicom-)
   * [2.2 AT command basic](#22-at-command-basic)
+    + [- don't forget to connect with broadband](#--dont-forget-to-connect-with-broadband)
+    + [- check connection, enable module, and reboot](#--check-connection-enable-module-and-reboot)
+    + [- set module as 5G](#--set-module-as-5g)
+    + [- check registration status](#--check-registration-status)
+    + [- check PDP context](#--check-pdp-context)
+    + [- check connection](#--check-connection)
+    + [- check network strength](#--check-network-strength)
+    + [8. (optional) shutdown](#8-optional-shutdown)
 - [3. use case](#3-use-case)
   * [3.1. quectel as a UE for srsRAN4G](#31-quectel-as-a-ue-for-srsran4g-)
   * [3.2. quectel to enable computator to connect to 5G and iperf to UNAI](#32-quectel-to-enable-computator-to-connect-to-5g-and-iperf-to-unai)
@@ -450,11 +458,11 @@ AT+QNWINFO?
 (worst to best)
 - AT+QCSQ : RSRP [-140,-40], SINR [-20,40], RSRQ [-20,-3] 
 - AT+QNWCFG : MCS[0-31], CQI[0-15]
-##### 8. (optional) shutdown
+##### - (optional) shutdown
 ```
 AT+QPOWD
 ```
-8. (optional) ping using AT command - not recommend, mostly returns `+QPING:569`
+##### - (optional) ping using AT command - not recommend, mostly returns `+QPING:569`
 ```
 at+qping=1,"google.com"
 OK
