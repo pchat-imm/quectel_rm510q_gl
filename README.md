@@ -168,10 +168,10 @@ rtt min/avg/max/mdev = 28.580/37.034/50.015/7.594 ms
 ```
 
 #### 1.2. setting up a data connection use mmcli 
-- from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829
-- **note: for using the UE first time, it is not recommend to connect using `mmcli`, `qmicli` will be better** <br />
+from https://github.com/srsran/srsRAN_Project/discussions/426#discussioncomment-8233829 <br>
+**note: for using the UE first time, it is not recommend to connect using `mmcli`, `qmicli` will be better** <br />
 
-connect to the modem
+- connect to the modem
 ```
 ## list connected modem
 sudo mmcli -L
@@ -185,7 +185,7 @@ sudo mmcli -m 22 -e
 sudo mmcli -m 22 --simple-connect="apn=srsapn"
     successfully connected the modem
 ```
-get ip address and set link up
+- get ip address and set link up
 ```
 sudo ip link set wwan0 up
 sudo udhcpc -q -f -i wwan0
@@ -196,7 +196,7 @@ in case the `udhcpc` not working, just add ip directly
 sudo ip a add 10.45.0.2/24 dev wwan0
 ip a
 ```
-then ping to see if it can access internet
+- then ping to see if it can access internet
 ```
 ping -I wwan0 8.8.8.8
 ping -I wwan0 10.45.0.1   # core network
@@ -297,22 +297,24 @@ sudo dmesg | grep /dev/ttyUSB
 sudo dmesg | grep ttyUSB
 ```
 From https://bacnh.com/quectel-linux-usb-drivers-troubleshooting, indicate we will use `ttyUSB2` for `AT command`
-> /dev/ttyUSB0 - DM 
-> /dev/ttyUSB1 - For GPS NMEA message output 
-> /dev/ttyUSB2 - For AT command communication 
-> /dev/ttyUSB3 - For PPP connection or AT command communication 
+> /dev/ttyUSB0 - DM \
+> /dev/ttyUSB1 - For GPS NMEA message output <br> 
+> /dev/ttyUSB2 - For AT command communication \
+> /dev/ttyUSB3 - For PPP connection or AT command communication \
 
 - enter `minicom`
 ```
 sudo minicom -s
 ```
 - setting serial port
-<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="30%" height="30%" align="left">
+<img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/eff7a2fd-395d-41b7-8725-8a9177d57f36" width="40%" height="30%" align="left">
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a289b780-4135-44cd-a02e-da1e2a03187a" width=50% height=50%/> <br/>
+
 make sure </br>
-> serial device = /dev/ttyUSB2 \
-> bps = 115200 (default) \
-> Hardware flow control = No \
+- serial device = /dev/ttyUSB2 \
+- bps = 115200 (default) \
+- Hardware flow control = No
+  
 everytime finish `Save setup as dfl` before `exit`
 
 #### 2.2 AT command basic 
@@ -320,16 +322,16 @@ from
 - [Ettus/OAI Reference Architecture for 5G and 6G Research with USRP](https://kb.ettus.com/OAI_Reference_Architecture_for_5G_and_6G_Research_with_USRP)
 - [OAI/NR_SA_Tutorial_COTS_UE.md](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/NR_SA_Tutorial_COTS_UE.md)
   
-don't forget to connect with broadband \
+##### - don't forget to connect with broadband 
 <img src="https://github.com/pchat-imm/quectel_rm510q_gl/assets/40858099/a288c95d-3c49-4146-b53c-3e8528cbc1b3" width="70%" height="70%"/> <br/>
 
-basic minicom menu
+basic `minicom` menu
 - using ctrl A + E = echo ON, to show what you type on the screen
 - usign ctrl A + C = clear screen
 - using ctrl A + X to quit the minicom
 - if minicom freeze, open another window and try
 
-1. check connection, enable module, and reboot
+##### - check connection, enable module, and reboot
 ```
 ## check if AT command on
 AT
@@ -384,14 +386,14 @@ OK
 ```
 </details>
 
-2. set module as 5G
+##### - set module as 5G
 ```
 AT+QNWPREFCFG="nr5g_band"
 AT+QNWPREFCFG="mode_pref",NR5G
 AT+QNWPREFCFG="nr5g_disable_mode",0   ## enable 5G operation both SA and NSA - (0 is no mode is disable)
 AT+QNWPREFCFG="roam_pref",1-255       ## 255 = Roaming
 ```
-3. check registration status
+##### - check registration status
 ```
 AT+CREG=?        
 +CREG:1,0       ## 1 = registered home network
@@ -399,7 +401,7 @@ AT+CREG=?
 AT+C5GREG?      ## 0 = disable / 1 = enable network
                 ## 1 = registered home network
 ```
-4. check PDP context
+##### - check PDP context
 ```
 ## check PDP context
 AT+CGDCONT?
@@ -413,7 +415,7 @@ AT+CGDCONT=3
 AT+CGACT=1,1    ## second number is CID
                 ## return 1 = connect
 ```
-5. check connection
+##### - check connection
 ```
 AT+COPS?
 +COPS: 0,0,"Open5GS Magic",11
@@ -426,7 +428,7 @@ AT+CGPADDR
 +CGPADDR: 1,"10.45.0.2"
 ```
 - for `AT+COPS` if it returns no network name, change setting from `5G only` to `3G, 4G, 5G` 
-6. check network strength
+##### - check network strength
 ```
 AT+QCSQ
 +QCSQ: <RAT>,<RSRP>,<SINR>,<RSRQ>        
@@ -448,7 +450,7 @@ AT+QNWINFO?
 (worst to best)
 - AT+QCSQ : RSRP [-140,-40], SINR [-20,40], RSRQ [-20,-3] 
 - AT+QNWCFG : MCS[0-31], CQI[0-15]
-7. (optional) shutdown
+##### 8. (optional) shutdown
 ```
 AT+QPOWD
 ```
